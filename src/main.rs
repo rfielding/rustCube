@@ -65,17 +65,17 @@ impl Cube {
 
     fn draw(&self) {
         let s = |pos: &str| self.stickers.get(pos).unwrap();
-        println!(". ... {}{}{} ... .",
+        println!("      {}{}{}      ",
             s("bul"),s("bu"),s("bru"),
         );
         println!();
-        println!(". ... {}{}{} ... .",
+        println!("      {}{}{}      ",
             s("ulb"),s("ub"),s("ubr"),
         );
-        println!(". ... {}{}{} ... .",
+        println!("      {}{}{}      ",
             s("ul"),s("u"),s("ur"),
         );
-        println!(". ... {}{}{} ... .",
+        println!("      {}{}{}      ",
             s("ufl"),s("uf"),s("urf"),
         );
         println!();
@@ -101,17 +101,17 @@ impl Cube {
             s("bdr"),
         );
         println!();
-        println!(". ... {}{}{} ... .",
+        println!("      {}{}{}      ",
             s("dlf"),s("df"),s("dfr"),
         );
-        println!(". ... {}{}{} ... .",
+        println!("      {}{}{}      ",
             s("dl"),s("d"),s("dr"),
         );
-        println!(". ... {}{}{} ... .",
+        println!("      {}{}{}      ",
             s("dbl"),s("db"),s("drb"),
         );
         println!();
-        println!(". ... {}{}{} ... .",
+        println!("      {}{}{}      ",
             s("bld"),s("bd"),s("bdr"),
         );
     }
