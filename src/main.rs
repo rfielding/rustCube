@@ -240,15 +240,6 @@ fn main() {
 
         let mut input = input.trim(); 
 
-        if input.eq_ignore_ascii_case("quit") {
-            break;
-        }
-
-        if input.eq_ignore_ascii_case("new") {
-            cube = Cube::new();
-            continue;
-        }
-
         if input.is_empty() {
             input = prev.as_str();
             repeats = repeats + 1;
@@ -258,10 +249,13 @@ fn main() {
 
         let mut chars = input.chars().peekable();
         let mut turns = 1;
+        let mut quit = false;
     
         while let Some(ch) = chars.next() {
-            // Check for inverse move ("/" means 3 turns)
-            if ch == '/' {
+            if ch == 'q' {
+                quit = true;
+                break;
+            } else if ch == '/' {
                 turns = 3;
             } else if ch == 'n' {
                 cube = Cube::new();
@@ -278,6 +272,9 @@ fn main() {
                 cube.turn(&ch.to_string(), turns);
                 turns = 1;
             }
+        }
+        if quit {
+            break;
         }
         cube.draw(&input, repeats);
         prev = input.to_string();
