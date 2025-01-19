@@ -36,18 +36,10 @@ All faces enumerate adjacencies as counter-clockwise-winding:
   - f: u l d r
   - u: b l f r
 
-Where it can't quite be forced which adjacent face comes first.
-Symmetries just demand that all faces mention in a counter-clockwise
-circular order. To twist a face, all involved stickers need to be moved:
+The main thing is that upper-case to move the whole cube by its face,
+or use lower case to turn a face, and use "/" to negate a turn.
+When you type in a move like "r u /r /u", you can figure out its period,
+by pressing return until the cube is solved again. The repeats will
+tell you that "r u /r /u" has period 6.
 
-  - everything is (period-1) swaps moving counter-clockwise to do a clockwise turn
-    - edge on both faces
-    - corner on all three faces
-
-Ex of turn f:
-   - for i in 0..3: # adjacent[f] = [u, l, d, r]
-     - swap (f, adjacent[i])
-
-> assume that a number BEFORE face moves a slice. a number after a slice is the
-number of turns. to twist the entire 3x3x3 cube from face u:  u, 1u, d3. we can use / as a shorthand for 3 turns, to get inverse:  r /u /r u could be a commutator about u.
-
+You can use the CLI to solve a cube after you scramble it.
