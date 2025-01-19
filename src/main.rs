@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::io::{self, Write};
 
 struct Cube {
     adj: HashMap<String, Vec<String>>, // Adjacency relations
@@ -212,9 +213,47 @@ impl Cube {
     }
 }
 
+
 fn main() {
     let mut cube = Cube::new();
-    cube.turn("r",1);
-    cube.turn_all("u",1);
     cube.draw();
+    loop {
+        print!("% ");
+        io::stdout().flush().unwrap(); // Ensure the prompt is displayed before input
+
+        let mut input = String::new();
+        io::stdin().read_line(&mut input).expect("Failed to read line");
+
+        let input = input.trim(); // Remove any leading/trailing whitespace
+
+        if input.eq_ignore_ascii_case("quit") {
+            break;
+        }
+
+        if input.eq_ignore_ascii_case("new") {
+            cube = Cube::new();
+            continue;
+        }
+
+        let mut chars = input.chars().peekable();
+        let mut turns = 1;
+    
+        while let Some(ch) = chars.next() {
+            // Check for inverse move ("/" means 3 turns)
+            if ch == '/' {
+                turns = 3;
+            } else if ch == 'U' || ch == 'D' || 
+               ch == 'F' || ch == 'B' || 
+               ch == 'L' || ch == 'R' {
+                cube.turn_all(&ch.to_string(), turns);
+                turns = 1;
+            } else if ch == 'u' || ch == 'd' ||
+                      ch == 'f' || ch == 'b' ||
+                      ch == 'l' || ch == 'r' {
+                cube.turn(&ch.to_string(), turns);
+                turns = 1;
+            }
+        }
+        cube.draw();
+    }
 }
