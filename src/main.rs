@@ -247,56 +247,26 @@ fn str_in_set(token: &str, set: &[&str]) -> bool {
 }
 
 fn parse_rewrite(tokens: Vec<String>) -> Vec<String> {
-    let mut new_tokens = Vec::new();
-    let mut i = 0;
-    let len = tokens.len();
-
-    while i < len {
-        let token = &tokens[i];
-        if token == "(" {
-            let mut group = Vec::new();
-            i += 1;
-            while i < len && tokens[i] != ")" {
-                group.push(tokens[i].clone());
-                i += 1;
-            }
-            i += 1;
-            let mut group2 = Vec::new();
-            for j in (0..group.len()).rev() {
-                group2.push(group[j].clone());
-                if group[j] == "/" {
-                    group2.push("/".to_string());
-                }
-            }
-            new_tokens.append(&mut group2);
-        } else {
-            new_tokens.push(token.clone());
-            i += 1;
+    // First do a pass to remove non-functional tokens
+    let mut cleaned = Vec::new();
+    for token in tokens {
+        if str_in_set(&token, &[
+            //"(", ")",
+             "U", "D", "L", "R", "F", "B", 
+             "u", "d", "l", "r", "f", "b",
+              "/", "n", "q"]) {
+            cleaned.push(token);
         }
     }
-    new_tokens
+    cleaned
 }
 
 fn process_tokens(cube: &mut Cube, tokens: Vec<String>) {
     let mut turns = 1;
     let mut quit = false;
 
-    // we need to rewrite the list to reverse groups:
-    // r u /(r u)
-    // rewritten as
-    // r u /u /r
-    //
-    // also to handle numeric multiples:
-    //
-    // r2 u2 /(b d)2
-    //
-    // where an integer after a face or a group
-    // means to repeat it. Rewritten tokens like:
-    //
-    // rruu/d/b/d/b
-    //
     let tokens2 = parse_rewrite(tokens);
-    //println!("rewriten tokens: {:?}", tokens2);
+    println!("rewriten tokens: {:?}", tokens2);
 
     for token in tokens2 {
         if token == "q" {
@@ -330,7 +300,7 @@ fn main() {
     println!("Use Singmaster convention for moves: u r f d l b");
     println!("Use capital letters to turn entire cube: U R F D L B");
     println!("Use '/' for inverse of a single face (3 turns)");
-    println!("Use parens for decoration or inverse: u r /(r u) is the same as: u r /u /r");
+    //println!("Use parens for decoration or inverse: u r /(r u) is the same as: u r /u /r");
     println!("Use 'n' for a new cube");
     println!("Use 'q' to exit");
 
