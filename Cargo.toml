@@ -1,5 +1,5 @@
 [package]
-name = "rust_file_server"
+name = "rust_cube"
 version = "0.1.0"
 edition = "2018"
 
