@@ -245,7 +245,8 @@ fn main() {
             } else if ch == 'U' || ch == 'D' || 
                ch == 'F' || ch == 'B' || 
                ch == 'L' || ch == 'R' {
-                cube.turn_all(&ch.to_string(), turns);
+                let c = ch.to_lowercase().to_string();
+                cube.turn_all(&c, turns);
                 turns = 1;
             } else if ch == 'u' || ch == 'd' ||
                       ch == 'f' || ch == 'b' ||
