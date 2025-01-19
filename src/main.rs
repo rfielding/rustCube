@@ -63,7 +63,7 @@ impl Cube {
         stickers
     }
 
-    fn draw(&self) {
+    fn draw(&self, cmd: &str, repeats: i32) {
         let s = |pos: &str| self.stickers.get(pos).unwrap();
         println!("      {}{}{}      ",
             s("bul"),s("bu"),s("bru"),
@@ -114,6 +114,8 @@ impl Cube {
         println!("      {}{}{}      ",
             s("bld"),s("bd"),s("bdr"),
         );
+        println!();
+        println!("cmd: {} x {}", cmd, repeats);
     }
 
     
@@ -216,15 +218,27 @@ impl Cube {
 
 fn main() {
     let mut cube = Cube::new();
-    cube.draw();
+    let mut prev = String::new();
+    let mut repeats = 1;
+
+    println!("Use Singmaster convention for moves: u r f d l b");
+    println!("Use capital letters to turn entire cube: U R F D L B");
+    println!("Use '/' for inverse of a single face (3 turns)");
+    //println!("Use parens for decoration or inverse: u r /(u r) is the same as: u r /r /u")
+    println!("Use 'n' for a new cube");
+    println!("Use 'quit' to exit");
+    println!("Use example 1: ./rust_cube: u r /u /r U /U");
+    println!("Use example 2: rlwrap ./rust_cube: u r, and up arrow to repeat, back arrow to edit");
+
+    cube.draw(&prev, repeats);
     loop {
         print!("% ");
-        io::stdout().flush().unwrap(); // Ensure the prompt is displayed before input
+        io::stdout().flush().unwrap();
 
         let mut input = String::new();
         io::stdin().read_line(&mut input).expect("Failed to read line");
 
-        let input = input.trim(); // Remove any leading/trailing whitespace
+        let mut input = input.trim(); 
 
         if input.eq_ignore_ascii_case("quit") {
             break;
@@ -233,6 +247,13 @@ fn main() {
         if input.eq_ignore_ascii_case("new") {
             cube = Cube::new();
             continue;
+        }
+
+        if input.is_empty() {
+            input = prev.as_str();
+            repeats = repeats + 1;
+        } else {
+            repeats = 1;
         }
 
         let mut chars = input.chars().peekable();
@@ -258,6 +279,7 @@ fn main() {
                 turns = 1;
             }
         }
-        cube.draw();
+        cube.draw(&input, repeats);
+        prev = input.to_string();
     }
 }
