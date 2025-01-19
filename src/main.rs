@@ -249,7 +249,7 @@ fn str_in_set(token: &str, set: &[&str]) -> bool {
 fn parse_rewrite(cube: &mut Cube, tokens: Vec<String>) -> Vec<String> {
     let mut new_tokens = Vec::new();
     let mut i = 0;
-    let mut len = tokens.len();
+    let len = tokens.len();
 
     while i < len {
         let token = &tokens[i];
