@@ -242,6 +242,9 @@ fn main() {
             // Check for inverse move ("/" means 3 turns)
             if ch == '/' {
                 turns = 3;
+            } else if ch == 'n' {
+                cube = Cube::new();
+                turns = 1;
             } else if ch == 'U' || ch == 'D' || 
                ch == 'F' || ch == 'B' || 
                ch == 'L' || ch == 'R' {
