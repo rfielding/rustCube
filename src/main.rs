@@ -246,7 +246,7 @@ fn str_in_set(token: &str, set: &[&str]) -> bool {
     set.contains(&token)
 }
 
-fn parse_rewrite(cube: &mut Cube, tokens: Vec<String>) -> Vec<String> {
+fn parse_rewrite(tokens: Vec<String>) -> Vec<String> {
     let mut new_tokens = Vec::new();
     let mut i = 0;
     let len = tokens.len();
@@ -295,7 +295,7 @@ fn process_tokens(cube: &mut Cube, tokens: Vec<String>) {
     //
     // rruu/d/b/d/b
     //
-    let tokens2 = parse_rewrite(cube, tokens);
+    let tokens2 = parse_rewrite(tokens);
     //println!("rewriten tokens: {:?}", tokens2);
 
     for token in tokens2 {
@@ -324,7 +324,7 @@ fn process_tokens(cube: &mut Cube, tokens: Vec<String>) {
 
 fn main() {
     let mut cube = Cube::new();
-    let mut prev = String::new();
+    let mut current = String::new();
     let mut repeats = 1;
 
     println!("Use Singmaster convention for moves: u r f d l b");
@@ -334,27 +334,30 @@ fn main() {
     println!("Use 'n' for a new cube");
     println!("Use 'q' to exit");
 
-    cube.draw(&prev, repeats);
+    cube.draw(&current, repeats);
     loop {
         print!("% ");
         io::stdout().flush().unwrap();
 
-        let mut input = String::new();
-        io::stdin().read_line(&mut input).expect("Failed to read line");
+        let prev = &current.to_string();
+        current.clear();
+        io::stdin().read_line(&mut current).expect("Failed to read line");
 
-        let mut input = input.trim(); 
-
-        if input.is_empty() || input == prev {
-            input = &prev;
-            repeats += 1;
-        } else {
-            prev = input.to_string();
+        current = current.trim().to_string();
+        
+        if current.is_empty() {
+           current = prev.to_string();
+        }
+        
+        if current != prev.to_string() {
             repeats = 1;
+        } else {
+            repeats += 1;
         }
 
-        let tokens = tokenize_input(input);
+        let tokens = tokenize_input(&current);
         process_tokens(&mut cube, tokens);
 
-        cube.draw(&prev, repeats);
+        cube.draw(&current, repeats);
     }
 }
