@@ -216,6 +216,64 @@ impl Cube {
 }
 
 
+fn tokenize_input(input: &str) -> Vec<String> {
+    let mut tokens = Vec::new();
+    let mut chars = input.chars().peekable();
+    
+    while let Some(ch) = chars.next() {
+        match ch {
+            'u' | 'r' | 'f' | 'd' | 'l' | 'b' | 
+            'U' | 'R' | 'F' | 'D' | 'L' | 'B' => {
+                tokens.push(ch.to_string());
+            }
+            '/' => {
+                tokens.push("/".to_string());
+            }
+            '(' => {
+                tokens.push("(".to_string());
+            }
+            ')' => {
+                tokens.push(")".to_string());
+            }
+            ' ' => continue, // Ignore spaces
+            _ => println!("Invalid character: {}", ch),
+        }
+    }
+    tokens
+}
+
+fn str_in_set(token: &str, set: &[&str]) -> bool {
+    set.contains(&token)
+}
+
+fn process_tokens(cube: &mut Cube, tokens: Vec<String>) {
+    let mut turns = 1;
+    let mut quit = false;
+
+    for token in tokens {
+        if token == "q" {
+            quit = true;
+            break;
+        } else if token == "/" {
+            turns = 3;
+        } else if token == "n" {
+            *cube = Cube::new();
+            turns = 1;
+        } else if str_in_set(&token, &["U", "R", "F", "D", "L", "B"]) {
+            let face = token.to_lowercase();
+            cube.turn_all(&face, turns);
+            turns = 1;
+        } else if str_in_set(&token, &["u", "r", "f", "d", "l", "b"]) {
+            cube.turn(&token, turns);
+            turns = 1;
+        }
+    }
+
+    if quit {
+        std::process::exit(0);
+    }
+}
+
 fn main() {
     let mut cube = Cube::new();
     let mut prev = String::new();
@@ -224,11 +282,9 @@ fn main() {
     println!("Use Singmaster convention for moves: u r f d l b");
     println!("Use capital letters to turn entire cube: U R F D L B");
     println!("Use '/' for inverse of a single face (3 turns)");
-    //println!("Use parens for decoration or inverse: u r /(u r) is the same as: u r /r /u")
+    println!("Use parens for decoration or inverse: u r /(r u) is the same as: u r /u /r");
     println!("Use 'n' for a new cube");
-    println!("Use 'quit' to exit");
-    println!("Use example 1: ./rust_cube: u r /u /r U /U");
-    println!("Use example 2: rlwrap ./rust_cube: u r, and up arrow to repeat, back arrow to edit");
+    println!("Use 'q' to exit");
 
     cube.draw(&prev, repeats);
     loop {
@@ -241,42 +297,16 @@ fn main() {
         let mut input = input.trim(); 
 
         if input.is_empty() {
-            input = prev.as_str();
-            repeats = repeats + 1;
+            input = &prev;
+            repeats += 1;
         } else {
+            prev = input.to_string();
             repeats = 1;
         }
 
-        let mut chars = input.chars().peekable();
-        let mut turns = 1;
-        let mut quit = false;
-    
-        while let Some(ch) = chars.next() {
-            if ch == 'q' {
-                quit = true;
-                break;
-            } else if ch == '/' {
-                turns = 3;
-            } else if ch == 'n' {
-                cube = Cube::new();
-                turns = 1;
-            } else if ch == 'U' || ch == 'D' || 
-               ch == 'F' || ch == 'B' || 
-               ch == 'L' || ch == 'R' {
-                let c = ch.to_lowercase().to_string();
-                cube.turn_all(&c, turns);
-                turns = 1;
-            } else if ch == 'u' || ch == 'd' ||
-                      ch == 'f' || ch == 'b' ||
-                      ch == 'l' || ch == 'r' {
-                cube.turn(&ch.to_string(), turns);
-                turns = 1;
-            }
-        }
-        if quit {
-            break;
-        }
-        cube.draw(&input, repeats);
-        prev = input.to_string();
+        let tokens = tokenize_input(input);
+        process_tokens(&mut cube, tokens);
+
+        cube.draw(&prev, repeats);
     }
 }
