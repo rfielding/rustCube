@@ -296,7 +296,7 @@ fn main() {
 
         let mut input = input.trim(); 
 
-        if input.is_empty() {
+        if input.is_empty() || input == prev {
             input = &prev;
             repeats += 1;
         } else {
