@@ -7,6 +7,7 @@ struct Cube {
     stickers: HashMap<String, String>, // Sticker positions and their faces
 }
 
+
 impl Cube {
     fn new() -> Self {
         let mut adj = HashMap::new();
@@ -213,81 +214,162 @@ impl Cube {
             self.turn_raw(f);
         }
     }
+
+    fn parse_input(input: &str) -> Vec<String> {
+        let mut tokens = Vec::new();
+        let mut chars = input.chars().peekable();
+        
+        while let Some(ch) = chars.next() {
+            match ch {
+                'u' | 'r' | 'f' | 'd' | 'l' | 'b' | 'q' | 'n' | '/' |
+                'U' | 'R' | 'F' | 'D' | 'L' | 'B' => {
+                    tokens.push(ch.to_string());
+                }
+                '(' => {
+                    tokens.push("(".to_string());
+                }
+                ')' => {
+                    tokens.push(")".to_string());
+                }
+                ' ' => continue, // Ignore spaces
+                _ => println!("?"),
+            }
+        }
+        tokens
+    }
+    
+    fn str_in_set(token: &str, set: &[&str]) -> bool {
+        set.contains(&token)
+    }
+    
+    fn parse_rewrite(tokens: Vec<String>) -> Vec<String> {
+        // First do a pass to remove non-functional tokens
+        let mut cleaned = Vec::new();
+        for token in tokens {
+            if Self::str_in_set(&token, &[
+                //"(", ")",
+                 "U", "D", "L", "R", "F", "B", 
+                 "u", "d", "l", "r", "f", "b",
+                  "/", "n", "q"]) {
+                cleaned.push(token);
+            }
+        }
+        cleaned
+    }
+    
+    fn process_tokens(cube: &mut Cube, tokens: Vec<String>) {
+        let mut turns = 1;
+        let mut quit = false;
+    
+        let tokens2 = Self::parse_rewrite(tokens);
+    
+        for token in tokens2 {
+            if token == "q" {
+                quit = true;
+                break;
+            } else if token == "/" {
+                turns = 3;
+            } else if token == "n" {
+                *cube = Self::new();
+                turns = 1;
+            } else if Self::str_in_set(&token, &["U", "R", "F", "D", "L", "B"]) {
+                let face = token.to_lowercase();
+                cube.turn_all(&face, turns);
+                turns = 1;
+            } else if Self::str_in_set(&token, &["u", "r", "f", "d", "l", "b"]) {
+                cube.turn(&token, turns);
+                turns = 1;
+            }
+        }
+    
+        if quit {
+            std::process::exit(0);
+        }
+    }    
 }
 
+/*
+// note: parsing into tokens to support parenthesis and repetition
+
+#[derive(Debug, Clone)]
+enum Token {
+    Move(String, bool, i32),        // Face move with optional negation and repetition count
+    Group(Vec<Token>, bool, i32),    // Group of moves with optional negation and repetition count
+    New,
+    Quit,
+}
 
 fn tokenize_input(input: &str) -> Vec<String> {
     let mut tokens = Vec::new();
     let mut chars = input.chars().peekable();
-    
+
     while let Some(ch) = chars.next() {
-        match ch {
-            'u' | 'r' | 'f' | 'd' | 'l' | 'b' | 'q' | 'n' | '/' |
-            'U' | 'R' | 'F' | 'D' | 'L' | 'B' => {
-                tokens.push(ch.to_string());
+        if ch.is_alphabetic() || ch == '/' || ch == '(' || ch == ')' {
+            tokens.push(ch.to_string());
+        } else if ch.is_digit(10) {
+            let mut num = ch.to_string();
+            while let Some(&next_ch) = chars.peek() {
+                if next_ch.is_digit(10) {
+                    num.push(chars.next().unwrap());
+                } else {
+                    break;
+                }
             }
-            '(' => {
-                tokens.push("(".to_string());
-            }
-            ')' => {
-                tokens.push(")".to_string());
-            }
-            ' ' => continue, // Ignore spaces
-            _ => println!("?"),
+            tokens.push(num);
+        } else if ch != ' ' {
+            println!("Invalid character: {}", ch);
         }
     }
     tokens
 }
 
-fn str_in_set(token: &str, set: &[&str]) -> bool {
-    set.contains(&token)
-}
+fn parse_tokens(tokens: &[String]) -> Vec<Token> {
+    let mut stack: Vec<Vec<Token>> = vec![vec![]];
+    let mut negate_next = false;
 
-fn parse_rewrite(tokens: Vec<String>) -> Vec<String> {
-    // First do a pass to remove non-functional tokens
-    let mut cleaned = Vec::new();
-    for token in tokens {
-        if str_in_set(&token, &[
-            //"(", ")",
-             "U", "D", "L", "R", "F", "B", 
-             "u", "d", "l", "r", "f", "b",
-              "/", "n", "q"]) {
-            cleaned.push(token);
+    let mut i = 0;
+    while i < tokens.len() {
+        let token = &tokens[i];
+
+        if token == "/" {
+            negate_next = true;
+        } else if token == "(" {
+            stack.push(vec![]);
+        } else if token == ")" {
+            if let Some(group) = stack.pop() {
+                let is_negated = negate_next;
+                negate_next = false;
+
+                let count = if i + 1 < tokens.len() && tokens[i + 1].chars().all(char::is_numeric) {
+                    let c = tokens[i + 1].parse::<i32>().unwrap();
+                    i += 1;
+                    c
+                } else {
+                    1
+                };
+
+                stack.last_mut().unwrap().push(Token::Group(group, is_negated, count));
+            }
+        } else if token.chars().all(char::is_alphabetic) {
+            let count = if i + 1 < tokens.len() && tokens[i + 1].chars().all(char::is_numeric) {
+                let c = tokens[i + 1].parse::<i32>().unwrap();
+                i += 1;
+                c
+            } else {
+                1
+            };
+
+            stack.last_mut().unwrap().push(Token::Move(token.clone(), negate_next, count));
+            negate_next = false;
         }
+
+        i += 1;
     }
-    cleaned
+
+    stack.pop().unwrap()
 }
+*/
 
-fn process_tokens(cube: &mut Cube, tokens: Vec<String>) {
-    let mut turns = 1;
-    let mut quit = false;
-
-    let tokens2 = parse_rewrite(tokens);
-    //println!("rewriten tokens: {:?}", tokens2);
-
-    for token in tokens2 {
-        if token == "q" {
-            quit = true;
-            break;
-        } else if token == "/" {
-            turns = 3;
-        } else if token == "n" {
-            *cube = Cube::new();
-            turns = 1;
-        } else if str_in_set(&token, &["U", "R", "F", "D", "L", "B"]) {
-            let face = token.to_lowercase();
-            cube.turn_all(&face, turns);
-            turns = 1;
-        } else if str_in_set(&token, &["u", "r", "f", "d", "l", "b"]) {
-            cube.turn(&token, turns);
-            turns = 1;
-        }
-    }
-
-    if quit {
-        std::process::exit(0);
-    }
-}
 
 fn main() {
     let mut cube = Cube::new();
@@ -322,8 +404,8 @@ fn main() {
             repeats += 1;
         }
 
-        let tokens = tokenize_input(&current);
-        process_tokens(&mut cube, tokens);
+        let tokens = Cube::parse_input(&current);
+        Cube::process_tokens(&mut cube, tokens);
 
         cube.draw(&current, repeats);
     }
