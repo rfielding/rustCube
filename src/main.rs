@@ -222,7 +222,7 @@ fn tokenize_input(input: &str) -> Vec<String> {
     
     while let Some(ch) = chars.next() {
         match ch {
-            'u' | 'r' | 'f' | 'd' | 'l' | 'b' | 'q' | 'n' |
+            'u' | 'r' | 'f' | 'd' | 'l' | 'b' | 'q' | 'n' | '/' |
             'U' | 'R' | 'F' | 'D' | 'L' | 'B' => {
                 tokens.push(ch.to_string());
             }
