@@ -233,7 +233,7 @@ fn tokenize_input(input: &str) -> Vec<String> {
                 tokens.push(")".to_string());
             }
             ' ' => continue, // Ignore spaces
-            _ => println!("Invalid character: {}", ch),
+            _ => println!("?"),
         }
     }
     tokens
