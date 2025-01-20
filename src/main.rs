@@ -286,6 +286,45 @@ impl Cube {
             std::process::exit(0);
         }
     }    
+
+    fn input(&mut self) {
+        let mut current = String::new();
+        let mut repeats = 1;
+    
+        println!("Use Singmaster convention for moves: u r f d l b");
+        println!("Use capital letters to turn entire cube: U R F D L B");
+        println!("Use '/' for inverse of a single face (3 turns)");
+        //println!("Use parens for decoration or inverse: u r /(r u) is the same as: u r /u /r");
+        println!("Use 'n' for a new cube");
+        println!("Use 'q' to exit");
+    
+        self.draw(&current, repeats);
+        loop {
+            print!("% ");
+            io::stdout().flush().unwrap();
+    
+            let prev = &current.to_string();
+            current.clear();
+            io::stdin().read_line(&mut current).expect("Failed to read line");
+    
+            current = current.trim().to_string();
+            
+            if current.is_empty() {
+               current = prev.to_string();
+            }
+            
+            if current != prev.to_string() {
+                repeats = 1;
+            } else {
+                repeats += 1;
+            }
+    
+            let tokens = Self::parse_input(&current);
+            Self::process_tokens(self, tokens);
+    
+            self.draw(&current, repeats);
+        }
+    }
 }
 
 /*
@@ -373,40 +412,5 @@ fn parse_tokens(tokens: &[String]) -> Vec<Token> {
 
 fn main() {
     let mut cube = Cube::new();
-    let mut current = String::new();
-    let mut repeats = 1;
-
-    println!("Use Singmaster convention for moves: u r f d l b");
-    println!("Use capital letters to turn entire cube: U R F D L B");
-    println!("Use '/' for inverse of a single face (3 turns)");
-    //println!("Use parens for decoration or inverse: u r /(r u) is the same as: u r /u /r");
-    println!("Use 'n' for a new cube");
-    println!("Use 'q' to exit");
-
-    cube.draw(&current, repeats);
-    loop {
-        print!("% ");
-        io::stdout().flush().unwrap();
-
-        let prev = &current.to_string();
-        current.clear();
-        io::stdin().read_line(&mut current).expect("Failed to read line");
-
-        current = current.trim().to_string();
-        
-        if current.is_empty() {
-           current = prev.to_string();
-        }
-        
-        if current != prev.to_string() {
-            repeats = 1;
-        } else {
-            repeats += 1;
-        }
-
-        let tokens = Cube::parse_input(&current);
-        Cube::process_tokens(&mut cube, tokens);
-
-        cube.draw(&current, repeats);
-    }
+    cube.input();
 }
