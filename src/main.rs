@@ -222,12 +222,9 @@ fn tokenize_input(input: &str) -> Vec<String> {
     
     while let Some(ch) = chars.next() {
         match ch {
-            'u' | 'r' | 'f' | 'd' | 'l' | 'b' | 'q' |
+            'u' | 'r' | 'f' | 'd' | 'l' | 'b' | 'q' | 'n' |
             'U' | 'R' | 'F' | 'D' | 'L' | 'B' => {
                 tokens.push(ch.to_string());
-            }
-            '/' => {
-                tokens.push("/".to_string());
             }
             '(' => {
                 tokens.push("(".to_string());
@@ -266,7 +263,7 @@ fn process_tokens(cube: &mut Cube, tokens: Vec<String>) {
     let mut quit = false;
 
     let tokens2 = parse_rewrite(tokens);
-    println!("rewriten tokens: {:?}", tokens2);
+    //println!("rewriten tokens: {:?}", tokens2);
 
     for token in tokens2 {
         if token == "q" {
