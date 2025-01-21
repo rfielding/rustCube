@@ -43,3 +43,21 @@ by pressing return until the cube is solved again. The repeats will
 tell you that "r u /r /u" has period 6.
 
 You can use the CLI to solve a cube after you scramble it.
+
+
+Examples. Before execution, things are flattened out.
+Numbers and parenthesis are not yet implemented
+
+- "r u" => "ru"
+- "(r u)" => "ru"
+- "r u /r /u" => "ru/r/u"
+- "/(ur) => "/r/u"
+- "(r u)/(u r) => "ru/r/u"
+- "((r u)/(u r))3 => "ru/r/uru/r/uru/r/u"
+
+> Should the period be calculated immediately for every command? Currently, we just counted how many times we did something.
+
+We should have named moves, and allow moves to be reflected across an axis.
+As you solve, you should save complicated moves; and be able to re-use them.
+You may want to do entire sections of a solve with a command.
+Perhaps you can do an entire solve as one command if you can see far ahead enough.
