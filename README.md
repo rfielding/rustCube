@@ -51,9 +51,9 @@ Numbers and parenthesis are not yet implemented
 - "r u" => "ru"
 - "(r u)" => "ru"
 - "r u /r /u" => "ru/r/u"
-- "/(ur) => "/r/u"
-- "(r u)/(u r) => "ru/r/u"
-- "((r u)/(u r))3 => "ru/r/uru/r/uru/r/u"
+- "/(ur)" => "/r/u"
+- "(r u)/(u r)" => "ru/r/u"
+- "((r u)/(u r))3" => "ru/r/uru/r/uru/r/u"
 
 > Should the period be calculated immediately for every command? Currently, we just counted how many times we did something.
 
