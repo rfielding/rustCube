@@ -54,7 +54,7 @@ Numbers and parenthesis are not yet implemented
 - "(r u)" => "ru"
 - "r u /r /u" => "ru/r/u"
 
-Not yet implemented, but might be a good idea:
+Used in rlwrap, you can repeat tedious commands. Not yet implemented, but might be a good idea:
 
 - "u2" => "uu"
 - "u12" => "uuuuuuuuuuuu"
