@@ -53,9 +53,15 @@ Numbers and parenthesis are not yet implemented
 - "r u" => "ru"
 - "(r u)" => "ru"
 - "r u /r /u" => "ru/r/u"
-- "/(ur)" => "/r/u"
+
+Not yet implemented:
+
+- "u2" => "uu"
+- "u12" => "uuuuuuuuuuuu"
+- "/(ur)" => "/r/u" negation in parens
 - "(r u)/(u r)" => "ru/r/u"
 - "((r u)/(u r))3" => "ru/r/uru/r/uru/r/u"
+- "[r u]" => "r u /u /r" commutator
 
 > Should the period be calculated immediately for every command? Currently, we just counted how many times we did something.
 
