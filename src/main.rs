@@ -327,6 +327,42 @@ impl Cube {
     }
 }
 
+/*
+  # character-level bnf, so that no tokenization is needed.
+  # space rules enforced. this is un-reduced legal input.
+  # try to prefix with concrete values already seen.
+
+  digit      := '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
+  number     := digit | digit number
+  count      := number
+
+  face       := 'u' | 'r' | 'f' | 'd' | 'l' | 'b'
+  lface      := '/' lface | face
+  cface      := lface count | lface
+
+  rotation   := 'U' | 'R' | 'F' | 'D' | 'L' | 'B'
+  lrotation  := '/' lrotation | rotation
+  crotation  := lrotation count | lrotation
+
+  faces      := cface     | cface ' ' faces         | cface faces
+  rotations  := crotation | crotation ' ' rotations | crotation crotations
+
+  items      := faces | rotations | ' '
+
+  grp        := '(' items ')' | '/' grp | grp count
+  commutator := '[' items ']' | '/' commutator | commutator count
+
+  tokens     := (items | ' ' | grp | commutator)
+
+  # Post-parse processing
+
+  '/' '[' c:items ']'      -> '/' '(' '[' c ']' ')'
+  '[' c:items ']'          -> '(' c ('/' (x for x in c)) ')'
+  '/' '(' c:items ')'      -> '(' Reverse('/' (x for x in c)) ')'
+  '(' c:items ')' n:count  -> Repeat(n, '(' c ')')   
+  c:lface n:count -> Repeat(n, '(' c ')')
+ */
+
 
 fn main() {
     let mut cube = Cube::new();
