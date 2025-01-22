@@ -54,7 +54,7 @@ Numbers and parenthesis are not yet implemented
 - "(r u)" => "ru"
 - "r u /r /u" => "ru/r/u"
 
-Not yet implemented:
+Not yet implemented, but might be a good idea:
 
 - "u2" => "uu"
 - "u12" => "uuuuuuuuuuuu"
@@ -62,6 +62,7 @@ Not yet implemented:
 - "(r u)/(u r)" => "ru/r/u"
 - "((r u)/(u r))3" => "ru/r/uru/r/uru/r/u"
 - "[r u]" => "r u /u /r" commutator
+- "x = [r u]3" => "r u /u /r" set to a value "x" for reuse
 
 > Should the period be calculated immediately for every command? Currently, we just counted how many times we did something.
 
