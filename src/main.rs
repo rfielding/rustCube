@@ -231,8 +231,12 @@ impl Cube {
                 ')' => {
                     tokens.push(")".to_string());
                 }
-                ' ' => continue, // Ignore spaces
-                _ => println!("?"),
+                '[' => {
+                    tokens.push("[".to_string());
+                }
+                ']' => {
+                    tokens.push("]".to_string());
+                } _ => {}
             }
         }
         tokens
@@ -241,29 +245,13 @@ impl Cube {
     fn str_in_set(token: &str, set: &[&str]) -> bool {
         set.contains(&token)
     }
-    
-    fn parse_rewrite(tokens: Vec<String>) -> Vec<String> {
-        // First do a pass to remove non-functional tokens
-        let mut cleaned = Vec::new();
-        for token in tokens {
-            if Self::str_in_set(&token, &[
-                //"(", ")",
-                 "U", "D", "L", "R", "F", "B", 
-                 "u", "d", "l", "r", "f", "b",
-                  "/", "n", "q"]) {
-                cleaned.push(token);
-            }
-        }
-        cleaned
-    }
+
     
     fn process_tokens(cube: &mut Cube, tokens: Vec<String>) {
         let mut turns = 1;
         let mut quit = false;
-    
-        let tokens2 = Self::parse_rewrite(tokens);
-    
-        for token in tokens2 {
+
+        for token in tokens {
             if token == "q" {
                 quit = true;
                 break;
@@ -294,7 +282,6 @@ impl Cube {
         println!("Use Singmaster convention for moves: u r f d l b");
         println!("Use capital letters to turn entire cube: U R F D L B");
         println!("Use '/' for inverse of a single face (3 turns)");
-        //println!("Use parens for decoration or inverse: u r /(r u) is the same as: u r /u /r");
         println!("Use 'n' for a new cube");
         println!("Use 'q' to exit");
     
