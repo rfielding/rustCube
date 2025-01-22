@@ -1,7 +1,7 @@
 rustcube
 ========
 
-![remarkable.png](remarkable.png){: style="width:200px"}
+![remarkable.png](remarkable.png =200)
 
 A command-line tool for Rubiks Cube calculations.
 We want to draw the state of a rubiks cube like this:
