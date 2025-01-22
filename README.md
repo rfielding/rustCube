@@ -61,8 +61,8 @@ Not yet implemented, but might be a good idea:
 - "/(ur)" => "/r/u" negation in parens
 - "(r u)/(u r)" => "ru/r/u"
 - "((r u)/(u r))3" => "ru/r/uru/r/uru/r/u"
-- "[r u]" => "r u /u /r" commutator
-- "x = [r u]3" => "r u /u /r" set to a value "x" for reuse
+- "[r u]" => "r u /r /u" commutator
+- "x = [r u]3" => "ru/r/u ru/r/u ru/r/u" set to a value "x" for reuse
 
 > Should the period be calculated immediately for every command? Currently, we just counted how many times we did something.
 
