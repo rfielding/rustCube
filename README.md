@@ -63,7 +63,7 @@ Used in rlwrap, you can repeat tedious commands. Not yet implemented, but might 
 - "((r u)/(u r))3" => "ru/r/uru/r/uru/r/u"
 - "[r u]" => "r u /r /u" commutator
 - "x = [r u]3" => "ru/r/u ru/r/u ru/r/u" set to a value "x" for reuse
-- "[r u][u2 r]" => "ru /r/u uu r /u/u r" = "ru/r u r/u/u" 
+- "[r u][(u2) r]" => "ru /r/u uu r /u/u r" = "ru/r u r/u/u" note that more than faces have patterns 
 - "[fd]2u[fd]4" => "fd/d/f fd/d/f uu fd/f/d fd/f/d fd/f/d fd/f/d" overalperiod 6 for "[fd]"
 > Should the period be calculated immediately for every command? Currently, we just counted how many times we did something.
 
