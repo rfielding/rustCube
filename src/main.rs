@@ -221,9 +221,27 @@ impl Cube {
         
         while let Some(ch) = chars.next() {
             match ch {
-                'u' | 'r' | 'f' | 'd' | 'l' | 'b' | 'q' | 'n' | '/' |
+                'q' | 'n' => {
+                    tokens.push(ch.to_string());
+                }
+                '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {
+                    let mut num = ch.to_string();
+                    while let Some(&ch) = chars.peek() {
+                        if ch.is_digit(10) {
+                            num.push(ch);
+                            chars.next();
+                        } else {
+                            break;
+                        }
+                    }
+                    tokens.push(num);
+                }
+                'u' | 'r' | 'f' | 'd' | 'l' | 'b' |
                 'U' | 'R' | 'F' | 'D' | 'L' | 'B' => {
                     tokens.push(ch.to_string());
+                }
+                '/' => {
+                    tokens.push("/".to_string());
                 }
                 '(' => {
                     tokens.push("(".to_string());
@@ -239,6 +257,7 @@ impl Cube {
                 } _ => {}
             }
         }
+        println!("{:?}", tokens);
         tokens
     }
     
@@ -255,11 +274,15 @@ impl Cube {
             if token == "q" {
                 quit = true;
                 break;
-            } else if token == "/" {
-                turns = 3;
             } else if token == "n" {
                 *cube = Self::new();
                 turns = 1;
+            } else if token == "(" {
+            } else if token == ")" {
+            } else if token == "[" {
+            } else if token == "]" {
+            } else if token == "/" {
+                turns = 3;
             } else if Self::str_in_set(&token, &["U", "R", "F", "D", "L", "B"]) {
                 let face = token.to_lowercase();
                 cube.turn_all(&face, turns);
@@ -313,42 +336,6 @@ impl Cube {
         }
     }
 }
-
-/*
-  # character-level bnf, so that no tokenization is needed.
-  # space rules enforced. this is un-reduced legal input.
-  # try to prefix with concrete values already seen.
-
-  digit      := '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
-  number     := digit | digit number
-  count      := number
-
-  face       := 'u' | 'r' | 'f' | 'd' | 'l' | 'b'
-  lface      := '/' lface | face
-  cface      := lface count | lface
-
-  rotation   := 'U' | 'R' | 'F' | 'D' | 'L' | 'B'
-  lrotation  := '/' lrotation | rotation
-  crotation  := lrotation count | lrotation
-
-  faces      := cface     | cface ' ' faces         | cface faces
-  rotations  := crotation | crotation ' ' rotations | crotation crotations
-
-  items      := faces | rotations | ' '
-
-  grp        := '(' items ')' | '/' grp | grp count
-  commutator := '[' items ']' | '/' commutator | commutator count
-
-  tokens     := (items | ' ' | grp | commutator)
-
-  # Post-parse processing
-
-  '/' '[' c:items ']'      -> '/' '(' '[' c ']' ')'
-  '[' c:items ']'          -> '(' c ('/' (x for x in c)) ')'
-  '/' '(' c:items ')'      -> '(' Reverse('/' (x for x in c)) ')'
-  '(' c:items ')' n:count  -> Repeat(n, '(' c ')')   
-  c:lface n:count -> Repeat(n, '(' c ')')
- */
 
 
 fn main() {
