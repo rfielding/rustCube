@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 )
 
 /*
@@ -220,6 +221,7 @@ func (cube *Cube) Turn1(f string, center bool) {
 func (cube *Cube) Turn(i string, count int) {
 	//
 	all := cube.shouldTurnWholeCube(i)
+	i = strings.ToLower(i)
 
 	for count < 0 {
 		count += cube.FacePeriod
@@ -264,6 +266,8 @@ func (cube *Cube) help() {
 	fmt.Printf("reverse turn '/', like: /u\n")
 	fmt.Printf("example: u r /u /r\n")
 	fmt.Printf("example: UUUU returns to where it started\n")
+	fmt.Printf("help: ?\n")
+	fmt.Printf("new cube: n\n")
 }
 
 func (cube *Cube) Loop() {
