@@ -247,6 +247,7 @@ func (cube *Cube) Loop() {
 	cmd := ""
 	repeats := 0
 	prevCmd := ""
+	negated := false
 	for {
 		cube.Draw(cmd, repeats)
 		fmt.Scanln(&cmd)
@@ -305,7 +306,7 @@ func (cube *Cube) Loop() {
 			// this is about an individual face
 			if toLower == "u" || toLower == "r" || toLower == "f" || toLower == "d" || toLower == "l" || toLower == "b" {
 				if strings.Compare(c, toLower) == 0 { // can only be upper case or lower case
-					if !negative {
+					if !negative && !negated || negated && !negative {
 						cube.Turn(toLower, -1, false)
 					} else {
 						cube.Turn(toLower, 1, false)
@@ -317,12 +318,6 @@ func (cube *Cube) Loop() {
 						cube.Turn(toLower, -1, true)
 					}
 				}
-				/*
-					if !isLower {
-						cube.Turn(toLower, repeats, negative)
-					} else {
-						cube.Turn(toLower, repeats, negative)
-					}*/
 			}
 			if i+1 >= len(cmd) {
 				break
