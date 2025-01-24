@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"strings"
 )
 
@@ -261,20 +263,22 @@ func (cube *Cube) shouldTurnCube(f string) bool {
 }
 
 func (cube *Cube) help() {
+	fmt.Printf("run with rlwrap for better keyboard handling\n")
 	fmt.Printf("turn a face: u r f d l b\n")
 	fmt.Printf("turn cube:   U R F D L B\n")
 	fmt.Printf("reverse turn '/', like: /u\n")
 	fmt.Printf("commutator: [ur] => ur/u/r\n")
 	fmt.Printf("neg parens: /(ur) => /u/r\n")
 	fmt.Printf("reps: u2 => uu\n")
-	fmt.Printf("reps: (ru)2 => ruru")
+	fmt.Printf("reps: (ru)2 => ruru\n")
 	fmt.Printf("identity: (ru)/(ru) => ()\n")
-	fmt.Printf("period 4: [fr]3u[fr]3/\n")
+	fmt.Printf("period 4: [fr]3u[fr]3\n")
 	fmt.Printf("period 4: [fb]2u[fb]4\n")
 	fmt.Printf("example: u r /u /r\n")
 	fmt.Printf("example: UUUU returns to where it started\n")
 	fmt.Printf("help: ?\n")
 	fmt.Printf("new cube: n\n")
+	fmt.Printf("quit: q\n")
 }
 
 type Node struct {
@@ -323,6 +327,9 @@ func Parse(input string) Node {
 	negParens := false
 	for i := 0; i < len(input); i++ {
 		char := input[i]
+		if char == ' ' {
+			continue
+		}
 
 		switch char {
 		case '(', '[':
@@ -374,9 +381,11 @@ func Parse(input string) Node {
 					stack[top][len(stack[top])-1].Repeat = num
 				}
 			}
+		case ' ':
+			// ignore
 		default:
-			// why do spaces make it stop??
-			continue
+			// why do spaces make it stop? return nothing if it wont be interpreted right.
+			return Node{}
 		}
 		wasNegated = false
 	}
@@ -430,7 +439,13 @@ func (cube *Cube) Loop() {
 	cube.help()
 	for {
 		cube.Draw(cmd, repeats)
-		fmt.Scanln(&cmd)
+		rdr := bufio.NewReader(os.Stdin)
+		cmd, err := rdr.ReadString('\n')
+		if err != nil {
+			fmt.Printf("Error reading input\n")
+			continue
+		}
+		cmd = strings.TrimSpace(cmd)
 
 		if cmd == "q" {
 			break
@@ -441,9 +456,9 @@ func (cube *Cube) Loop() {
 			continue
 		}
 
-		if cmd == "?" {
+		if cmd == "?" || cmd == "h" {
 			cube.help()
-			continue
+			fmt.Scanln(&cmd)
 		}
 
 		if cmd == prevCmd || cmd == "" {
@@ -458,9 +473,10 @@ func (cube *Cube) Loop() {
 
 		nodes := Parse(cmd)
 
-		fmt.Printf("%s\n", nodes.Print())
+		fmt.Printf("parsed as: %s\n", nodes.Print())
 
 		cube.Execute(nodes, 0)
+		fmt.Println()
 	}
 }
 
