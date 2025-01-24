@@ -300,9 +300,6 @@ func (node Node) Print() string {
 		} else {
 			v += ")"
 		}
-		if node.Repeat != 0 {
-			v += fmt.Sprintf("%d", node.Repeat)
-		}
 	} else {
 		v += node.Face
 	}
@@ -383,18 +380,19 @@ func (cube *Cube) Execute(node Node) {
 		negate = node.Negate
 	}
 	if node.Arr != nil {
-		for _, cmd := range node.Arr {
-			for i := 0; i < repeat; i++ {
+		for i := 0; i < repeat; i++ {
+			for _, cmd := range node.Arr {
 				cube.Execute(cmd)
 			}
 		}
 	} else {
 		if node.Face != "" {
+			turn := repeat
 			if negate {
-				repeat = -repeat
+				turn = turn * -1
 			}
-			fmt.Printf("%s %d\n", node.Face, repeat)
-			cube.Turn(node.Face, repeat)
+			fmt.Printf("do: %s %d\n", node.Face, turn)
+			cube.Turn(node.Face, turn)
 		}
 	}
 }
