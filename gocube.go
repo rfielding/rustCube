@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"strings"
 )
 
 /*
@@ -85,6 +84,71 @@ func NewCube() *Cube {
 	return cube
 }
 
+// stdio side-effect
+func (cube *Cube) Draw(cmd string, repeats int) {
+	s := func(s string) string {
+		v := cube.Stickers[s]
+		if v == "" {
+			panic(fmt.Sprintf("sticker is not mapped: %s\n%v", s, cube.Stickers))
+		}
+		return v
+	}
+
+	// draw a 3x3x3 cube now, with clockwise corners
+	fmt.Printf("      %s%s%s      \n",
+		s("bul"), s("bu"), s("bru"),
+	)
+	fmt.Println()
+	fmt.Printf("      %s%s%s      \n",
+		s("ulb"), s("ub"), s("ubr"),
+	)
+	fmt.Printf("      %s%s%s      \n",
+		s("ul"), s("u"), s("ur"),
+	)
+	fmt.Printf("      %s%s%s      \n",
+		s("ufl"), s("uf"), s("urf"),
+	)
+	fmt.Println()
+	fmt.Printf("%s %s%s%s %s%s%s %s%s%s %s\n",
+		s("bul"),
+		s("lbu"), s("lu"), s("luf"),
+		s("flu"), s("fu"), s("fur"),
+		s("rfu"), s("ru"), s("rub"),
+		s("bru"),
+	)
+	fmt.Printf("%s %s%s%s %s%s%s %s%s%s %s\n",
+		s("bl"),
+		s("lb"), s("l"), s("lf"),
+		s("fl"), s("f"), s("fr"),
+		s("rf"), s("r"), s("rb"),
+		s("br"),
+	)
+	fmt.Printf("%s %s%s%s %s%s%s %s%s%s %s\n",
+		s("bld"),
+		s("ldb"), s("ld"), s("lfd"),
+		s("fdl"), s("fd"), s("frd"),
+		s("rdf"), s("rd"), s("rbd"),
+		s("bdr"),
+	)
+	fmt.Println()
+	fmt.Printf("      %s%s%s      \n",
+		s("dlf"), s("df"), s("dfr"),
+	)
+	fmt.Printf("      %s%s%s      \n",
+		s("dl"), s("d"), s("dr"),
+	)
+	fmt.Printf("      %s%s%s      \n",
+		s("dbl"), s("db"), s("drb"),
+	)
+	fmt.Println()
+	fmt.Printf("      %s%s%s      \n",
+		s("bld"), s("bd"), s("bdr"),
+	)
+	fmt.Println()
+	fmt.Printf("cmd: %s x %d\n", cmd, repeats)
+
+}
+
 // 1 turn of  and maybe center at face i,
 //
 //	physical parts: ru~ur, rub~ubr~bru
@@ -153,7 +217,10 @@ func (cube *Cube) Turn1(f string, center bool) {
 }
 
 // turn a face *count* times, all cube or just a face
-func (cube *Cube) Turn(i string, count int, all bool) {
+func (cube *Cube) Turn(i string, count int) {
+	//
+	all := cube.shouldTurnWholeCube(i)
+
 	for count < 0 {
 		count += cube.FacePeriod
 	}
@@ -177,69 +244,18 @@ func (cube *Cube) Turn(i string, count int, all bool) {
 	}
 }
 
-// stdio side-effect
-func (cube *Cube) Draw(cmd string, repeats int) {
-	s := func(s string) string {
-		v := cube.Stickers[s]
-		if v == "" {
-			panic(fmt.Sprintf("sticker is not mapped: %s\n%v", s, cube.Stickers))
-		}
-		return v
+func (cube *Cube) shouldTurnWholeCube(f string) bool {
+	if f == "U" || f == "R" || f == "F" || f == "D" || f == "L" || f == "B" {
+		return true
 	}
+	return false
+}
 
-	// draw a 3x3x3 cube now, with clockwise corners
-	fmt.Printf("      %s%s%s      \n",
-		s("bul"), s("bu"), s("bru"),
-	)
-	fmt.Println()
-	fmt.Printf("      %s%s%s      \n",
-		s("ulb"), s("ub"), s("ubr"),
-	)
-	fmt.Printf("      %s%s%s      \n",
-		s("ul"), s("u"), s("ur"),
-	)
-	fmt.Printf("      %s%s%s      \n",
-		s("ufl"), s("uf"), s("urf"),
-	)
-	fmt.Println()
-	fmt.Printf("%s %s%s%s %s%s%s %s%s%s %s\n",
-		s("bul"),
-		s("lbu"), s("lu"), s("luf"),
-		s("flu"), s("fu"), s("fur"),
-		s("rfu"), s("ru"), s("rub"),
-		s("bru"),
-	)
-	fmt.Printf("%s %s%s%s %s%s%s %s%s%s %s\n",
-		s("bl"),
-		s("lb"), s("l"), s("lf"),
-		s("fl"), s("f"), s("fr"),
-		s("rf"), s("r"), s("rb"),
-		s("br"),
-	)
-	fmt.Printf("%s %s%s%s %s%s%s %s%s%s %s\n",
-		s("bld"),
-		s("ldb"), s("ld"), s("lfd"),
-		s("fdl"), s("fd"), s("frd"),
-		s("rdf"), s("rd"), s("rbd"),
-		s("bdr"),
-	)
-	fmt.Println()
-	fmt.Printf("      %s%s%s      \n",
-		s("dlf"), s("df"), s("dfr"),
-	)
-	fmt.Printf("      %s%s%s      \n",
-		s("dl"), s("d"), s("dr"),
-	)
-	fmt.Printf("      %s%s%s      \n",
-		s("dbl"), s("db"), s("drb"),
-	)
-	fmt.Println()
-	fmt.Printf("      %s%s%s      \n",
-		s("bld"), s("bd"), s("bdr"),
-	)
-	fmt.Println()
-	fmt.Printf("cmd: %s x %d\n", cmd, repeats)
-
+func (cube *Cube) shouldTurnCube(f string) bool {
+	if f == "u" || f == "r" || f == "f" || f == "d" || f == "l" || f == "b" {
+		return true
+	}
+	return false
 }
 
 func (cube *Cube) Loop() {
@@ -247,7 +263,7 @@ func (cube *Cube) Loop() {
 	cmd := ""
 	repeats := 0
 	prevCmd := ""
-	negated := false
+	negates := 0
 	for {
 		cube.Draw(cmd, repeats)
 		fmt.Scanln(&cmd)
@@ -290,9 +306,9 @@ func (cube *Cube) Loop() {
 			}
 
 			// remember if next token is negative
-			negative := false
+			nextNegate := 0
 			if cmd[i] == '/' && i+1 < len(cmd) {
-				negative = true
+				nextNegate++
 				i++
 			}
 
@@ -301,23 +317,15 @@ func (cube *Cube) Loop() {
 
 			// from here, everything is upper or lower-case face.
 			c := string(cmd[i])
-			toLower := strings.ToLower(c)
-
 			// this is about an individual face
-			if toLower == "u" || toLower == "r" || toLower == "f" || toLower == "d" || toLower == "l" || toLower == "b" {
-				if strings.Compare(c, toLower) == 0 { // can only be upper case or lower case
-					if !negative && !negated || negated && !negative {
-						cube.Turn(toLower, -1, false)
-					} else {
-						cube.Turn(toLower, 1, false)
-					}
+			if cube.shouldTurnCube(c) || cube.shouldTurnWholeCube(c) {
+				turnCount := 0
+				if ((negates + nextNegate) % 2) == 0 {
+					turnCount = 1
 				} else {
-					if !negative {
-						cube.Turn(toLower, 1, true)
-					} else {
-						cube.Turn(toLower, -1, true)
-					}
+					turnCount = -1
 				}
+				cube.Turn(c, turnCount)
 			}
 			if i+1 >= len(cmd) {
 				break
