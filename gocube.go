@@ -264,6 +264,13 @@ func (cube *Cube) help() {
 	fmt.Printf("turn a face: u r f d l b\n")
 	fmt.Printf("turn cube:   U R F D L B\n")
 	fmt.Printf("reverse turn '/', like: /u\n")
+	fmt.Printf("commutator: [ur] => ur/u/r\n")
+	fmt.Printf("neg parens: /(ur) => /u/r\n")
+	fmt.Printf("reps: u2 => uu\n")
+	fmt.Printf("reps: (ru)2 => ruru")
+	fmt.Printf("identity: (ru)/(ru) => ()\n")
+	fmt.Printf("period 4: [fr]3u[fr]3/\n")
+	fmt.Printf("period 4: [fb]2u[fb]4\n")
 	fmt.Printf("example: u r /u /r\n")
 	fmt.Printf("example: UUUU returns to where it started\n")
 	fmt.Printf("help: ?\n")
@@ -367,6 +374,9 @@ func Parse(input string) Node {
 					stack[top][len(stack[top])-1].Repeat = num
 				}
 			}
+		default:
+			// why do spaces make it stop??
+			continue
 		}
 		wasNegated = false
 	}
