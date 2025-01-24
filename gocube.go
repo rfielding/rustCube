@@ -270,6 +270,11 @@ func (cube *Cube) help() {
 	fmt.Printf("new cube: n\n")
 }
 
+type Command struct {
+	Face  string
+	Count int
+}
+
 func (cube *Cube) Loop() {
 	// loop to get and anlyze a line and draw the screen
 	cmd := ""
@@ -305,7 +310,7 @@ func (cube *Cube) Loop() {
 		}
 		prevCmd = cmd
 
-		// loop to parse cmd and do what cmd says
+		cmdList := make([]Command, 0)
 		i := 0
 		for {
 			// nothing to read
@@ -338,12 +343,22 @@ func (cube *Cube) Loop() {
 				} else {
 					turnCount = -1
 				}
-				cube.Turn(c, turnCount)
+				cmdList = append(
+					cmdList,
+					Command{
+						Face:  c,
+						Count: turnCount,
+					},
+				)
 			}
 			if i+1 >= len(cmd) {
 				break
 			}
 			i = i + 1
+		}
+		// do what we calculated
+		for _, cmd := range cmdList {
+			cube.Turn(cmd.Face, cmd.Count)
 		}
 	}
 }
