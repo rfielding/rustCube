@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 )
 
 /*
@@ -9,6 +10,10 @@ import (
   It is very unproductive to use Rust for writing a parser.
   I will work on the Rust version to learn Rust, but the Go version
   to get the parsing to work right.
+
+  In Rust, I am having to figure out a state machine to parse with,
+  just to avoid all of the copy/move stuff that seems so painfully
+  unnecessary to just get a working language parser.
 */
 
 type Cube struct {
@@ -35,7 +40,7 @@ func NewCube() *Cube {
 			"l": "r",
 			"b": "f",
 		},
-		// adjacencies
+		// adjacencies are counter-clockwise, so that swaps produce a clockwise turn
 		Adj: map[string][]string{
 			"u": {"f", "r", "b", "l"},
 			"r": {"u", "f", "d", "b"},
@@ -80,10 +85,24 @@ func NewCube() *Cube {
 	return cube
 }
 
-// 1 turn of 1 face at i,
+// 1 turn of  and maybe center at face i,
 //
 //	physical parts: ru~ur, rub~ubr~bru
 func (cube *Cube) Turn1(f string, center bool) {
+	s := func(s string) string {
+		v := cube.Stickers[s]
+		if v == "" {
+			panic(fmt.Sprintf("sticker is not mapped: %s\n%v", s, cube.Stickers))
+		}
+		return v
+	}
+
+	swap := func(a string, b string) {
+		tmp := cube.Stickers[a]
+		cube.Stickers[a] = cube.Stickers[b]
+		cube.Stickers[b] = tmp
+	}
+
 	// faces have a period of 4, move their stickers
 	//
 	//  k | f | j
@@ -93,63 +112,62 @@ func (cube *Cube) Turn1(f string, center bool) {
 	// edge:   fi,if -> fj,jf
 	// corner: fik,ikf,kfi -> fji,jif,fji
 	//
-	for fi := 0; fi < cube.FacePeriod; fi++ {
+	// note that because we swap in pairs, it's one-less than period
+	//
+	for fi := 0; fi < cube.FacePeriod-1; fi++ {
 		k := cube.Adj[f][(fi+3)%cube.FacePeriod] //behind fi
 		i := cube.Adj[f][fi]                     //at fi
-		j := cube.Adj[f][(fi+1)%4]               //ahead fi
+		j := cube.Adj[f][(fi+1)%cube.FacePeriod] //ahead fi
+		e0a := s(f + i)
+		e1a := s(i + f)
+		e0b := s(f + j)
+		e1b := s(j + f)
+		swap(e0a, e0b)
+		swap(e1a, e1b)
+		fmt.Printf("%s%s %s%s\n", e0a, e1a, e0b, e1b)
 
-		e0a := cube.Stickers[f+i]
-		e1a := cube.Stickers[i+f]
-
-		e0b := cube.Stickers[f+j]
-		e1b := cube.Stickers[j+f]
-
-		c0a := cube.Stickers[f+j+i]
-		c1a := cube.Stickers[j+i+f]
-		c2a := cube.Stickers[i+f+j]
-
-		c0b := cube.Stickers[f+i+k]
-		c1b := cube.Stickers[i+k+f]
-		c2b := cube.Stickers[k+f+i]
-
-		// swap a and b, corner and edge orbit
-		cube.Stickers[e0b], cube.Stickers[e0a] = cube.Stickers[e0a], cube.Stickers[e0b]
-		cube.Stickers[e1b], cube.Stickers[e1a] = cube.Stickers[e1a], cube.Stickers[e1b]
-		cube.Stickers[c0b], cube.Stickers[c0a] = cube.Stickers[c0a], cube.Stickers[c0b]
-		cube.Stickers[c1b], cube.Stickers[c1a] = cube.Stickers[c1a], cube.Stickers[c1b]
-		cube.Stickers[c2b], cube.Stickers[c2a] = cube.Stickers[c2a], cube.Stickers[c2b]
+		c0a := s(f + i + k)
+		c1a := s(i + k + f)
+		c2a := s(k + f + i)
+		c0b := s(f + j + i)
+		c1b := s(j + i + f)
+		c2b := s(i + f + j)
+		swap(c0a, c0b)
+		swap(c1a, c1b)
+		swap(c2a, c2b)
+		fmt.Printf("%s%s%s %s%s%s\n", c0a, c1a, c2a, c0b, c1b, c2b)
 
 		if center {
-			m0a := i
-			e0a := i + k
-			e1a := k + i
-
-			m0b := j
-			e0b := j + i
-			e1b := i + j
-
-			cube.Stickers[m0b], cube.Stickers[m0a] = cube.Stickers[m0a], cube.Stickers[m0b]
-			cube.Stickers[e0b], cube.Stickers[e0a] = cube.Stickers[e0a], cube.Stickers[e0b]
-			cube.Stickers[e1b], cube.Stickers[e1a] = cube.Stickers[e1a], cube.Stickers[e1b]
+			m0a := s(i)
+			m0b := s(j)
+			swap(m0a, m0b)
+			fmt.Printf("%s %s\n", m0a, m0b)
+			e0a := s(i + k)
+			e1a := s(k + i)
+			e0b := s(j + i)
+			e1b := s(i + j)
+			swap(e0a, e0b)
+			swap(e1a, e1b)
+			fmt.Printf("%s%s %s%s\n", e0a, e1a, e0b, e1b)
 		}
 	}
 }
 
 // turn a face *count* times, all cube or just a face
 func (cube *Cube) Turn(i string, count int, all bool) {
-	// normalize turn count
-	for count < 0 {
-		count += cube.FacePeriod
-	}
-	count %= cube.FacePeriod
-
-	for n := 0; n < count; n++ {
-		if all {
-			// turn an entire 3x3x3 by turning top and center by count, and bottom by -count
+	// turn a face count times.
+	if all {
+		// turn face and center
+		for n := 0; n < count; n++ {
 			cube.Turn1(i, true)
+		}
+		// triple is negative, needed to turn back face
+		ncount := ((cube.FacePeriod - 1) * count) % cube.FacePeriod
+		for n := 0; n < ncount; n++ {
 			cube.Turn1(cube.Opposite[i], false)
-		} else {
-			// just turn a face
+		}
+	} else {
+		for n := 0; n < count; n++ {
 			cube.Turn1(i, false)
 		}
 	}
@@ -158,7 +176,6 @@ func (cube *Cube) Turn(i string, count int, all bool) {
 // stdio side-effect
 func (cube *Cube) Draw(cmd string, repeats int) {
 	s := func(s string) string {
-		// it is impossible to look up a sticker and not find it unless we misspelled the name
 		v := cube.Stickers[s]
 		if v == "" {
 			panic(fmt.Sprintf("sticker is not mapped: %s\n%v", s, cube.Stickers))
@@ -166,6 +183,7 @@ func (cube *Cube) Draw(cmd string, repeats int) {
 		return v
 	}
 
+	// draw a 3x3x3 cube now, with clockwise corners
 	fmt.Printf("      %s%s%s      \n",
 		s("bul"), s("bu"), s("bru"),
 	)
@@ -221,9 +239,12 @@ func (cube *Cube) Draw(cmd string, repeats int) {
 }
 
 func (cube *Cube) Loop() {
+	// loop to get and anlyze a line and draw the screen
 	cmd := ""
 	repeats := 0
+	prevCmd := ""
 	for {
+		cube.Draw(cmd, repeats)
 		fmt.Scanln(&cmd)
 
 		if cmd == "q" {
@@ -235,13 +256,65 @@ func (cube *Cube) Loop() {
 			continue
 		}
 
-		repeats = 1
+		if cmd == "?" {
+			fmt.Printf("stickers: %v\n", cube.Stickers)
+			continue
+		}
 
-		_ = cmd
-		_ = repeats
+		if cmd == prevCmd || cmd == "" {
+			if cmd == "" {
+				cmd = prevCmd
+			}
+			repeats = repeats + 1
+		} else {
+			repeats = 1
+		}
+		prevCmd = cmd
 
-		cube.Draw(cmd, repeats)
-		fmt.Println()
+		// loop to parse cmd and do what cmd says
+		i := 0
+		for {
+			// nothing to read
+			if i >= len(cmd) {
+				break
+			}
+
+			// skip whitespace
+			for cmd[i] == ' ' && i+1 < len(cmd) {
+				i++
+			}
+
+			// remember if next token is negative
+			negative := false
+			if cmd[i] == '/' && i+1 < len(cmd) {
+				negative = true
+				i++
+			}
+
+			// expect groups or turn tokens
+			// TODO: ( ) [ ]
+
+			// from here, everything is upper or lower-case face.
+			c := string(cmd[i])
+			toLower := strings.ToLower(c)
+			isLower := true
+			if strings.Compare(c, toLower) != 0 {
+				isLower = false
+			}
+
+			// this is about an individual face
+			if toLower == "u" || toLower == "r" || toLower == "f" || toLower == "d" || toLower == "l" || toLower == "b" {
+				if !isLower {
+					cube.Turn(toLower, repeats, negative)
+				} else {
+					cube.Turn(toLower, repeats, negative)
+				}
+			}
+			if i+1 >= len(cmd) {
+				break
+			}
+			i = i + 1
+		}
 	}
 }
 
