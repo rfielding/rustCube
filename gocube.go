@@ -270,10 +270,133 @@ func (cube *Cube) help() {
 	fmt.Printf("new cube: n\n")
 }
 
-type Command struct {
-	Face  string
-	Count int
-	Char  rune
+type Node struct {
+	Face       string
+	Negate     bool
+	Commutator bool
+	Arr        []Node
+	Repeat     int
+}
+
+func (node Node) Print() string {
+	v := ""
+	if node.Negate {
+		v += "/"
+	}
+	if node.Arr != nil {
+		if node.Commutator {
+			v += "["
+		} else {
+			v += "("
+		}
+		for i, n := range node.Arr {
+			if i > 0 {
+				v += " "
+			}
+			v += n.Print()
+		}
+		if node.Commutator {
+			v += "]"
+		} else {
+			v += ")"
+		}
+		if node.Repeat != 0 {
+			v += fmt.Sprintf("%d", node.Repeat)
+		}
+	} else {
+		v += node.Face
+	}
+	if node.Repeat != 0 {
+		v += fmt.Sprintf("%d", node.Repeat)
+	}
+	return v
+}
+
+// parseParentheses parses the input string and constructs a nested Node structure.
+func Parse(input string) Node {
+	stack := [][]Node{{}}
+	wasNegated := false
+	for i := 0; i < len(input); i++ {
+		char := input[i]
+
+		switch char {
+		case '(', '[':
+			stack = append(
+				stack,
+				[]Node{},
+			)
+		case ')', ']':
+			if len(stack) > 1 {
+				last := stack[len(stack)-1]
+				stack = stack[:len(stack)-1]
+				stack[len(stack)-1] = append(
+					stack[len(stack)-1],
+					Node{
+						Commutator: char == ']',
+						Arr:        last,
+						Negate:     wasNegated,
+					},
+				)
+			}
+		case '/':
+			// use it to set negate on next token
+			wasNegated = true
+			continue
+		case 'U', 'R', 'F', 'D', 'L', 'B', 'u', 'r', 'f', 'd', 'l', 'b':
+			face := char
+			top := len(stack) - 1
+			stack[top] = append(
+				stack[top],
+				Node{
+					Face:   string(face),
+					Negate: wasNegated,
+				},
+			)
+		case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
+			// look ahead to complete the number, and look back to write the repeat
+			num := 0
+			numStop := i
+			for numStop < len(input) && '0' < input[numStop] && input[numStop] <= '9' {
+				num = 10*num + int(input[numStop]-'0')
+				numStop++
+			}
+			i = numStop - 1
+			if 0 < i {
+				top := len(stack) - 1
+				if len(stack[top]) > 0 {
+					stack[top][len(stack[top])-1].Repeat = num
+				}
+			}
+		}
+		wasNegated = false
+	}
+	return Node{Arr: stack[0]}
+}
+
+func (cube *Cube) Execute(node Node) {
+	repeat := 1
+	negate := false
+	if node.Repeat != 0 {
+		repeat = node.Repeat
+	}
+	if node.Negate {
+		negate = node.Negate
+	}
+	if node.Arr != nil {
+		for _, cmd := range node.Arr {
+			for i := 0; i < repeat; i++ {
+				cube.Execute(cmd)
+			}
+		}
+	} else {
+		if node.Face != "" {
+			if negate {
+				repeat = -repeat
+			}
+			fmt.Printf("%s %d\n", node.Face, repeat)
+			cube.Turn(node.Face, repeat)
+		}
+	}
 }
 
 func (cube *Cube) Loop() {
@@ -281,7 +404,6 @@ func (cube *Cube) Loop() {
 	cmd := ""
 	repeats := 0
 	prevCmd := ""
-	negates := 0
 	cube.help()
 	for {
 		cube.Draw(cmd, repeats)
@@ -311,67 +433,11 @@ func (cube *Cube) Loop() {
 		}
 		prevCmd = cmd
 
-		// more flexible representation than string
-		chars := make([]Command, 0)
-		for _, c := range cmd {
-			chars = append(
-				chars,
-				Command{
-					Char: c,
-				},
-			)
-		}
+		nodes := Parse(cmd)
 
-		cmdList := make([]Command, 0)
-		i := 0
-		for {
-			// nothing to read
-			if i >= len(chars) {
-				break
-			}
+		fmt.Printf("%s\n", nodes.Print())
 
-			// skip whitespace
-			for chars[i].Char == ' ' && i+1 < len(chars) {
-				i++
-			}
-
-			// remember if next token is negative
-			nextNegate := 0
-			if chars[i].Char == '/' && i+1 < len(chars) {
-				nextNegate++
-				i++
-			}
-
-			// expect groups or turn tokens
-			// TODO: ( ) [ ]
-
-			// from here, everything is upper or lower-case face.
-			c := string(chars[i].Char)
-			// this is about an individual face
-			if cube.shouldTurnCube(c) || cube.shouldTurnWholeCube(c) {
-				turnCount := 0
-				if ((negates + nextNegate) % 2) == 0 {
-					turnCount = 1
-				} else {
-					turnCount = -1
-				}
-				cmdList = append(
-					cmdList,
-					Command{
-						Face:  c,
-						Count: turnCount,
-					},
-				)
-			}
-			if i+1 >= len(chars) {
-				break
-			}
-			i = i + 1
-		}
-		// do what we calculated
-		for _, cmd := range cmdList {
-			cube.Turn(cmd.Face, cmd.Count)
-		}
+		cube.Execute(nodes)
 	}
 }
 
