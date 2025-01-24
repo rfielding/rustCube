@@ -98,9 +98,11 @@ func (cube *Cube) Turn1(f string, center bool) {
 	}
 
 	swap := func(a string, b string) {
-		tmp := cube.Stickers[a]
-		cube.Stickers[a] = cube.Stickers[b]
+		// use s(a) to verify that value is not null
+		tmp := s(a)
+		cube.Stickers[a] = s(b)
 		cube.Stickers[b] = tmp
+		//fmt.Printf("%s %s\n", a, b)
 	}
 
 	// faces have a period of 4, move their stickers
@@ -116,45 +118,47 @@ func (cube *Cube) Turn1(f string, center bool) {
 	//
 	for fi := 0; fi < cube.FacePeriod-1; fi++ {
 		k := cube.Adj[f][(fi+3)%cube.FacePeriod] //behind fi
-		i := cube.Adj[f][fi]                     //at fi
+		i := cube.Adj[f][(fi+0)%cube.FacePeriod] //at fi
 		j := cube.Adj[f][(fi+1)%cube.FacePeriod] //ahead fi
-		e0a := s(f + i)
-		e1a := s(i + f)
-		e0b := s(f + j)
-		e1b := s(j + f)
+
+		e0a := f + i
+		e1a := i + f
+		e0b := f + j
+		e1b := j + f
 		swap(e0a, e0b)
 		swap(e1a, e1b)
-		fmt.Printf("%s%s %s%s\n", e0a, e1a, e0b, e1b)
 
-		c0a := s(f + i + k)
-		c1a := s(i + k + f)
-		c2a := s(k + f + i)
-		c0b := s(f + j + i)
-		c1b := s(j + i + f)
-		c2b := s(i + f + j)
+		c0a := f + i + k
+		c1a := i + k + f
+		c2a := k + f + i
+		c0b := f + j + i
+		c1b := j + i + f
+		c2b := i + f + j
 		swap(c0a, c0b)
 		swap(c1a, c1b)
 		swap(c2a, c2b)
-		fmt.Printf("%s%s%s %s%s%s\n", c0a, c1a, c2a, c0b, c1b, c2b)
 
 		if center {
-			m0a := s(i)
-			m0b := s(j)
+			m0a := i
+			m0b := j
 			swap(m0a, m0b)
-			fmt.Printf("%s %s\n", m0a, m0b)
-			e0a := s(i + k)
-			e1a := s(k + i)
-			e0b := s(j + i)
-			e1b := s(i + j)
+			e0a := i + k
+			e1a := k + i
+			e0b := j + i
+			e1b := i + j
 			swap(e0a, e0b)
 			swap(e1a, e1b)
-			fmt.Printf("%s%s %s%s\n", e0a, e1a, e0b, e1b)
 		}
 	}
 }
 
 // turn a face *count* times, all cube or just a face
 func (cube *Cube) Turn(i string, count int, all bool) {
+	for count < 0 {
+		count += cube.FacePeriod
+	}
+	count = count % cube.FacePeriod
+
 	// turn a face count times.
 	if all {
 		// turn face and center
@@ -297,18 +301,28 @@ func (cube *Cube) Loop() {
 			// from here, everything is upper or lower-case face.
 			c := string(cmd[i])
 			toLower := strings.ToLower(c)
-			isLower := true
-			if strings.Compare(c, toLower) != 0 {
-				isLower = false
-			}
 
 			// this is about an individual face
 			if toLower == "u" || toLower == "r" || toLower == "f" || toLower == "d" || toLower == "l" || toLower == "b" {
-				if !isLower {
-					cube.Turn(toLower, repeats, negative)
+				if strings.Compare(c, toLower) == 0 { // can only be upper case or lower case
+					if !negative {
+						cube.Turn(toLower, -1, false)
+					} else {
+						cube.Turn(toLower, 1, false)
+					}
 				} else {
-					cube.Turn(toLower, repeats, negative)
+					if !negative {
+						cube.Turn(toLower, 1, true)
+					} else {
+						cube.Turn(toLower, -1, true)
+					}
 				}
+				/*
+					if !isLower {
+						cube.Turn(toLower, repeats, negative)
+					} else {
+						cube.Turn(toLower, repeats, negative)
+					}*/
 			}
 			if i+1 >= len(cmd) {
 				break
