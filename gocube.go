@@ -370,7 +370,7 @@ func Parse(input string) Node {
 	return Node{Arr: stack[0]}
 }
 
-func (cube *Cube) Execute(node Node) {
+func (cube *Cube) Execute(node Node, negated bool) {
 	repeat := 1
 	negate := false
 	if node.Repeat != 0 {
@@ -382,7 +382,7 @@ func (cube *Cube) Execute(node Node) {
 	if node.Arr != nil {
 		for i := 0; i < repeat; i++ {
 			for _, cmd := range node.Arr {
-				cube.Execute(cmd)
+				cube.Execute(cmd, negated)
 			}
 		}
 	} else {
@@ -435,7 +435,7 @@ func (cube *Cube) Loop() {
 
 		fmt.Printf("%s\n", nodes.Print())
 
-		cube.Execute(nodes)
+		cube.Execute(nodes, false)
 	}
 }
 
