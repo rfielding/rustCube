@@ -273,6 +273,7 @@ func (cube *Cube) help() {
 type Command struct {
 	Face  string
 	Count int
+	Char  rune
 }
 
 func (cube *Cube) Loop() {
@@ -310,22 +311,33 @@ func (cube *Cube) Loop() {
 		}
 		prevCmd = cmd
 
+		// more flexible representation than string
+		chars := make([]Command, 0)
+		for _, c := range cmd {
+			chars = append(
+				chars,
+				Command{
+					Char: c,
+				},
+			)
+		}
+
 		cmdList := make([]Command, 0)
 		i := 0
 		for {
 			// nothing to read
-			if i >= len(cmd) {
+			if i >= len(chars) {
 				break
 			}
 
 			// skip whitespace
-			for cmd[i] == ' ' && i+1 < len(cmd) {
+			for chars[i].Char == ' ' && i+1 < len(chars) {
 				i++
 			}
 
 			// remember if next token is negative
 			nextNegate := 0
-			if cmd[i] == '/' && i+1 < len(cmd) {
+			if chars[i].Char == '/' && i+1 < len(chars) {
 				nextNegate++
 				i++
 			}
@@ -334,7 +346,7 @@ func (cube *Cube) Loop() {
 			// TODO: ( ) [ ]
 
 			// from here, everything is upper or lower-case face.
-			c := string(cmd[i])
+			c := string(chars[i].Char)
 			// this is about an individual face
 			if cube.shouldTurnCube(c) || cube.shouldTurnWholeCube(c) {
 				turnCount := 0
@@ -351,7 +363,7 @@ func (cube *Cube) Loop() {
 					},
 				)
 			}
-			if i+1 >= len(cmd) {
+			if i+1 >= len(chars) {
 				break
 			}
 			i = i + 1
