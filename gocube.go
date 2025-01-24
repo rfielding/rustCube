@@ -258,12 +258,21 @@ func (cube *Cube) shouldTurnCube(f string) bool {
 	return false
 }
 
+func (cube *Cube) help() {
+	fmt.Printf("turn a face: u r f d l b\n")
+	fmt.Printf("turn cube:   U R F D L B\n")
+	fmt.Printf("reverse turn '/', like: /u\n")
+	fmt.Printf("example: u r /u /r\n")
+	fmt.Printf("example: UUUU returns to where it started\n")
+}
+
 func (cube *Cube) Loop() {
 	// loop to get and anlyze a line and draw the screen
 	cmd := ""
 	repeats := 0
 	prevCmd := ""
 	negates := 0
+	cube.help()
 	for {
 		cube.Draw(cmd, repeats)
 		fmt.Scanln(&cmd)
@@ -278,11 +287,7 @@ func (cube *Cube) Loop() {
 		}
 
 		if cmd == "?" {
-			fmt.Printf("turn a face: u r f d l b\n")
-			fmt.Printf("turn cube:   U R F D L B\n")
-			fmt.Printf("reverse turn '/', like: /u\n")
-			fmt.Printf("example: u r /u /r\n")
-			fmt.Printf("example: UUUU returns to where it started\n")
+			cube.help()
 			continue
 		}
 
