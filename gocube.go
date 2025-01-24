@@ -278,7 +278,11 @@ func (cube *Cube) Loop() {
 		}
 
 		if cmd == "?" {
-			fmt.Printf("stickers: %v\n", cube.Stickers)
+			fmt.Printf("turn a face: u r f d l b\n")
+			fmt.Printf("turn cube:   U R F D L B\n")
+			fmt.Printf("reverse turn '/', like: /u\n")
+			fmt.Printf("example: u r /u /r\n")
+			fmt.Printf("example: UUUU returns to where it started\n")
 			continue
 		}
 
