@@ -313,6 +313,7 @@ func (node Node) Print() string {
 func Parse(input string) Node {
 	stack := [][]Node{{}}
 	wasNegated := false
+	negParens := false
 	for i := 0; i < len(input); i++ {
 		char := input[i]
 
@@ -331,13 +332,15 @@ func Parse(input string) Node {
 					Node{
 						Commutator: char == ']',
 						Arr:        last,
-						Negate:     wasNegated,
+						Negate:     negParens,
 					},
 				)
 			}
+			negParens = false
 		case '/':
 			// use it to set negate on next token
 			wasNegated = true
+			negParens = true
 			continue
 		case 'U', 'R', 'F', 'D', 'L', 'B', 'u', 'r', 'f', 'd', 'l', 'b':
 			face := char
@@ -370,27 +373,39 @@ func Parse(input string) Node {
 	return Node{Arr: stack[0]}
 }
 
-func (cube *Cube) Execute(node Node, negated bool) {
+func reverse[T any](s []T) {
+	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
+		s[i], s[j] = s[j], s[i]
+	}
+}
+
+func (cube *Cube) Execute(node Node, negates int) {
 	repeat := 1
-	negate := false
 	if node.Repeat != 0 {
 		repeat = node.Repeat
 	}
 	if node.Negate {
-		negate = node.Negate
+		negates++
 	}
 	if node.Arr != nil {
 		for i := 0; i < repeat; i++ {
+			theList := node.Arr
+			if node.Negate && !node.Commutator {
+				reverse(theList)
+			}
 			for _, cmd := range node.Arr {
-				cube.Execute(cmd, negated)
+				cube.Execute(cmd, negates)
+			}
+			if node.Commutator {
+				for _, cmd := range node.Arr {
+					cube.Execute(cmd, negates+1)
+				}
 			}
 		}
 	} else {
 		if node.Face != "" {
 			turn := repeat
-			if negate {
-				turn = turn * -1
-			}
+			turn = turn * (1 - 2*(negates%2))
 			fmt.Printf("do: %s %d\n", node.Face, turn)
 			cube.Turn(node.Face, turn)
 		}
@@ -435,7 +450,7 @@ func (cube *Cube) Loop() {
 
 		fmt.Printf("%s\n", nodes.Print())
 
-		cube.Execute(nodes, false)
+		cube.Execute(nodes, 0)
 	}
 }
 
