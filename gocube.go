@@ -488,8 +488,12 @@ func (cube *Cube) Execute(node Node, negates int) {
 	} else {
 		if node.Face != "" {
 			turn := repeat
+			nstr := ""
+			if negates%2 == 1 {
+				nstr = "/"
+			}
+			fmt.Printf("%s%s%d ", nstr, node.Face, repeat)
 			turn = turn * (1 - 2*(negates%2))
-			fmt.Printf("do: %s %d\n", node.Face, turn)
 			cube.Turn(node.Face, turn)
 		}
 	}
@@ -545,16 +549,14 @@ func (cube *Cube) Loop() {
 		}
 		prevCmd = cmd
 
-		if cmd[0] == 'n' {
+		if len(cmd) > 0 && cmd[0] == 'n' {
 			cube = NewCube()
 			cmd = cmd[1:]
 		}
-
 		nodes := Parse(cmd)
-
 		fmt.Printf("parsed as: %s\n", nodes.Print())
-
 		cube.Execute(nodes, 0)
+		fmt.Println()
 		fmt.Println()
 	}
 }
