@@ -544,7 +544,15 @@ func (cube *Cube) Execute(node Node, negates int) {
 		if node.Face != "" {
 			turn := repeat
 			turn = turn * (1 - 2*(negates%2))
-			fmt.Printf("%s%d ", node.Face, turn)
+			rstr := ""
+			if repeat != 1 {
+				rstr = fmt.Sprintf("%d", repeat)
+			}
+			if negates%2 == 0 {
+				fmt.Printf("%s%s ", node.Face, rstr)
+			} else {
+				fmt.Printf("/%s%s ", node.Face, rstr)
+			}
 			cube.Turn(node.Face, turn)
 		}
 	}
