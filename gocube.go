@@ -306,6 +306,7 @@ func (cube *Cube) shouldTurnCube(f string) bool {
 
 func (cube *Cube) help() {
 	fmt.Printf("run with rlwrap for better keyboard handling\n")
+	fmt.Printf("conventions: Up Right Front Down Left Back\n")
 	fmt.Printf("turn a face: u r f d l b\n")
 	fmt.Printf("turn cube:   U R F D L B\n")
 	fmt.Printf("reverse turn '/', like: /u\n")
@@ -318,6 +319,7 @@ func (cube *Cube) help() {
 	fmt.Printf("period 4: [fb]2u[fb]4\n")
 	fmt.Printf("example: u r /u /r\n")
 	fmt.Printf("example: UUUU returns to where it started\n")
+	fmt.Printf("example: nru => start from new cube, then ru\n")
 	fmt.Printf("help: ?\n")
 	fmt.Printf("new cube: n\n")
 	fmt.Printf("toggle ansi colors: a\n")
@@ -366,11 +368,11 @@ func (node Node) Print() string {
 // parseParentheses parses the input string and constructs a nested Node structure.
 func Parse(input string) Node {
 	stack := [][]Node{{}}
+	nstack := make([]bool, 0)
 	wasNegated := false
-	negParens := false
 	for i := 0; i < len(input); i++ {
 		char := input[i]
-		if char == ' ' {
+		if char == 'n' {
 			continue
 		}
 
@@ -380,24 +382,27 @@ func Parse(input string) Node {
 				stack,
 				[]Node{},
 			)
+			nstack = append(nstack, wasNegated)
 		case ')', ']':
 			if len(stack) > 1 {
+				negatedParens := nstack[len(nstack)-1]
+				nstack = nstack[:len(nstack)-1]
+
 				last := stack[len(stack)-1]
 				stack = stack[:len(stack)-1]
+
 				stack[len(stack)-1] = append(
 					stack[len(stack)-1],
 					Node{
 						Commutator: char == ']',
 						Arr:        last,
-						Negate:     negParens,
+						Negate:     negatedParens,
 					},
 				)
 			}
-			negParens = false
 		case '/':
 			// use it to set negate on next token
 			wasNegated = true
-			negParens = true
 			continue
 		case 'U', 'R', 'F', 'D', 'L', 'B', 'u', 'r', 'f', 'd', 'l', 'b':
 			face := char
@@ -430,6 +435,7 @@ func Parse(input string) Node {
 			// why do spaces make it stop? return nothing if it wont be interpreted right.
 			return Node{}
 		}
+		// don't skip unless you set these
 		wasNegated = false
 	}
 	return Node{Arr: stack[0]}
@@ -450,17 +456,29 @@ func (cube *Cube) Execute(node Node, negates int) {
 		negates++
 	}
 	if node.Arr != nil {
+		// interpret as repeats bind latest
 		for i := 0; i < repeat; i++ {
-			theList := node.Arr
-			if node.Negate && !node.Commutator {
-				reverse(theList)
-			}
-			for _, cmd := range node.Arr {
-				cube.Execute(cmd, negates)
-			}
-			if node.Commutator {
+			if negates%2 == 1 && !node.Commutator {
+				theArr := node.Arr
+				reverse(theArr)
+				for _, cmd := range theArr {
+					// (ru)/(ru) => ()
+					// (fr)/(rf) => [fr]
+					// /(/(fr)) => ((fr))
+					cube.Execute(cmd, negates)
+				}
+			} else if node.Commutator {
+				for _, cmd := range node.Arr {
+					// [fr] => fr/f/r
+					// /[fr]2 => fr/f/rfr/f/r ?= /f/rfr/f/rfr
+					cube.Execute(cmd, negates)
+				}
 				for _, cmd := range node.Arr {
 					cube.Execute(cmd, negates+1)
+				}
+			} else {
+				for _, cmd := range node.Arr {
+					cube.Execute(cmd, negates)
 				}
 			}
 		}
@@ -506,6 +524,11 @@ func (cube *Cube) Loop() {
 		if cmd == "n" {
 			cube = NewCube()
 			continue
+		}
+
+		if cmd[0] == 'n' {
+			cube = NewCube()
+			cmd = cmd[1:]
 		}
 
 		if cmd == "?" || cmd == "h" {
