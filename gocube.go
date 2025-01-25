@@ -394,6 +394,7 @@ func Parse(input string) Node {
 						Commutator: char == ']',
 						Arr:        last,
 						Negate:     negatedParens,
+						Repeat:     1, // maybe updted
 					},
 				)
 			}
@@ -409,6 +410,7 @@ func Parse(input string) Node {
 				Node{
 					Face:   string(face),
 					Negate: wasNegated,
+					Repeat: 1, // maybe update
 				},
 			)
 		case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
@@ -464,10 +466,9 @@ func (cube *Cube) Execute(node Node, negates int) {
 					// /(/(fr)) => ((fr))
 					cube.Execute(cmd, negates)
 				}
+				reverse(theArr)
 			} else if node.Commutator {
 				for _, cmd := range node.Arr {
-					// [fr] => fr/f/r
-					// /[fr]2 => fr/f/rfr/f/r ?= /f/rfr/f/rfr
 					cube.Execute(cmd, negates)
 				}
 				for _, cmd := range node.Arr {
