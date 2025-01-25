@@ -310,14 +310,19 @@ func (cube *Cube) help() {
 	fmt.Printf("turn a face: u r f d l b\n")
 	fmt.Printf("turn cube:   U R F D L B\n")
 	fmt.Printf("reverse turn '/', like: /u\n")
-	fmt.Printf("commutator: [ur] => ur/u/r\n")
-	fmt.Printf("neg parens: /(ur) => /u/r\n")
+	//fmt.Printf("commutator: [ur] => ur/u/r\n")
+	//fmt.Printf("neg parens: /(ur) => /u/r\n")
 	fmt.Printf("reps: u2 => uu\n")
 	fmt.Printf("reps: (ru)2 => ruru\n")
-	fmt.Printf("identity: (ru)/(ru) => ()\n")
-	fmt.Printf("period 4: [fr]3u[fr]3\n")
-	fmt.Printf("period 4: [fb]2u[fb]4\n")
+	fmt.Printf("commutators: ((ru)/(ur))6 => ()\n")
+	//fmt.Printf("identity: (ru)/(ru) => ()\n")
+	//fmt.Printf("period 4: [fr]3u[fr]3\n")
+	//fmt.Printf("period 4: [fb]2u[fb]4\n")
 	fmt.Printf("example: u r /u /r\n")
+	fmt.Printf("note: square brackets not completely correct yet.\n")
+	fmt.Printf("example: ((fr)/(rf))3 u ((fr)/(rf))3 /u  -- nested commutator\n")
+	fmt.Printf("example: ((fd)/(df))4 u ((fd)/(df))2 /u  -- nested commutator\n")
+	fmt.Printf("example: ((/rd)/(d/r)) dd ((f/d)/(/df))  -- nested commutator\n")
 	fmt.Printf("example: UUUU returns to where it started\n")
 	fmt.Printf("example: nru => start from new cube, then ru\n")
 	fmt.Printf("help: ?\n")
@@ -503,7 +508,8 @@ func (cube *Cube) Loop() {
 
 		fmt.Printf("\u25B6 ")
 		rdr := bufio.NewReader(os.Stdin)
-		cmd, err := rdr.ReadString('\n')
+		var err error
+		cmd, err = rdr.ReadString('\n')
 		if err != nil {
 			fmt.Printf("Error reading input\n")
 			continue
@@ -526,7 +532,7 @@ func (cube *Cube) Loop() {
 
 		if cmd == "?" || cmd == "h" {
 			cube.help()
-			fmt.Printf("\u25B6 ")
+			continue
 		}
 
 		if cmd == prevCmd || cmd == "" {
