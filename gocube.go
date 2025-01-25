@@ -372,9 +372,6 @@ func Parse(input string) Node {
 	wasNegated := false
 	for i := 0; i < len(input); i++ {
 		char := input[i]
-		if char == 'n' {
-			continue
-		}
 
 		switch char {
 		case '(', '[':
@@ -526,11 +523,6 @@ func (cube *Cube) Loop() {
 			continue
 		}
 
-		if cmd[0] == 'n' {
-			cube = NewCube()
-			cmd = cmd[1:]
-		}
-
 		if cmd == "?" || cmd == "h" {
 			cube.help()
 			fmt.Printf("\u25B6 ")
@@ -545,6 +537,11 @@ func (cube *Cube) Loop() {
 			repeats = 1
 		}
 		prevCmd = cmd
+
+		if cmd[0] == 'n' {
+			cube = NewCube()
+			cmd = cmd[1:]
+		}
 
 		nodes := Parse(cmd)
 
