@@ -483,13 +483,23 @@ func (cube *Cube) Execute(node Node, negates int) {
 					cube.Execute(cmd, negates)
 				}
 				reverse(theArr)
-			} else if node.Commutator {
+			} else if node.Commutator && !node.Negate {
 				for _, cmd := range node.Arr {
 					cube.Execute(cmd, negates)
 				}
 				for _, cmd := range node.Arr {
 					cube.Execute(cmd, negates+1)
 				}
+			} else if node.Commutator && node.Negate {
+				theArr := node.Arr
+				reverse(theArr)
+				for _, cmd := range node.Arr {
+					cube.Execute(cmd, negates+1)
+				}
+				for _, cmd := range node.Arr {
+					cube.Execute(cmd, negates)
+				}
+				reverse(theArr)
 			} else {
 				for _, cmd := range node.Arr {
 					cube.Execute(cmd, negates)
