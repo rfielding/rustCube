@@ -88,45 +88,85 @@ func NewCube() *Cube {
 }
 
 // stdio side-effect
-func (cube *Cube) Draw(cmd string, repeats int) {
+func (cube *Cube) Draw(cmd string, repeats int, useAnsi bool) {
+	fullMask := "%s  %s%s%s  %s%s%s  %s%s%s  %s\n"
+	edgeMask := "            %s%s%s            \n"
+
 	s := func(s string) string {
 		v := cube.Stickers[s]
 		if v == "" {
 			panic(fmt.Sprintf("sticker is not mapped: %s\n%v", s, cube.Stickers))
 		}
+		// fg colors: 30 black, 31 red, 32 green, 33 yellow, 34 blue, 35 magenta, 36 cyan, 37 white
+		// bg colors: 40 black, 41 red, 42 green, 43 yellow, 44 blue, 45 magenta, 46 cyan, 47 white
+		if useAnsi {
+			switch v {
+			case "u":
+				v = fmt.Sprintf("\u001b[1;47;30m  \u001b[0m")
+			case "r":
+				v = fmt.Sprintf("\u001b[1;44;30m  \u001b[0m")
+			case "f":
+				v = fmt.Sprintf("\u001b[1;41;30m  \u001b[0m")
+			case "d":
+				v = fmt.Sprintf("\u001b[1;43;30m  \u001b[0m")
+			case "l":
+				v = fmt.Sprintf("\u001b[1;42;30m  \u001b[0m")
+			case "b":
+				v = fmt.Sprintf("\u001b[1;45;37m  \u001b[0m")
+			}
+		} else {
+			switch v {
+			case "u":
+				v = "u "
+			case "r":
+				v = "r "
+			case "f":
+				v = "f "
+			case "d":
+				v = "d "
+			case "l":
+				v = "l "
+			case "b":
+				v = "b "
+			}
+		}
 		return v
 	}
-
-	// draw a 3x3x3 cube now, with clockwise corners
-	fmt.Printf("      %s%s%s      \n",
+	fmt.Printf(edgeMask,
+		s("bld"), s("bd"), s("bdr"),
+	)
+	fmt.Printf(edgeMask,
+		s("bl"), s("b"), s("br"),
+	)
+	fmt.Printf(edgeMask,
 		s("bul"), s("bu"), s("bru"),
 	)
 	fmt.Println()
-	fmt.Printf("      %s%s%s      \n",
+	fmt.Printf(edgeMask,
 		s("ulb"), s("ub"), s("ubr"),
 	)
-	fmt.Printf("      %s%s%s      \n",
+	fmt.Printf(edgeMask,
 		s("ul"), s("u"), s("ur"),
 	)
-	fmt.Printf("      %s%s%s      \n",
+	fmt.Printf(edgeMask,
 		s("ufl"), s("uf"), s("urf"),
 	)
 	fmt.Println()
-	fmt.Printf("%s %s%s%s %s%s%s %s%s%s %s\n",
+	fmt.Printf(fullMask,
 		s("bul"),
 		s("lbu"), s("lu"), s("luf"),
 		s("flu"), s("fu"), s("fur"),
 		s("rfu"), s("ru"), s("rub"),
 		s("bru"),
 	)
-	fmt.Printf("%s %s%s%s %s%s%s %s%s%s %s\n",
+	fmt.Printf(fullMask,
 		s("bl"),
 		s("lb"), s("l"), s("lf"),
 		s("fl"), s("f"), s("fr"),
 		s("rf"), s("r"), s("rb"),
 		s("br"),
 	)
-	fmt.Printf("%s %s%s%s %s%s%s %s%s%s %s\n",
+	fmt.Printf(fullMask,
 		s("bld"),
 		s("ldb"), s("ld"), s("lfd"),
 		s("fdl"), s("fd"), s("frd"),
@@ -134,20 +174,22 @@ func (cube *Cube) Draw(cmd string, repeats int) {
 		s("bdr"),
 	)
 	fmt.Println()
-	fmt.Printf("      %s%s%s      \n",
+	fmt.Printf(edgeMask,
 		s("dlf"), s("df"), s("dfr"),
 	)
-	fmt.Printf("      %s%s%s      \n",
+	fmt.Printf(edgeMask,
 		s("dl"), s("d"), s("dr"),
 	)
-	fmt.Printf("      %s%s%s      \n",
+	fmt.Printf(edgeMask,
 		s("dbl"), s("db"), s("drb"),
 	)
 	fmt.Println()
-	fmt.Printf("      %s%s%s      \n",
+	fmt.Printf(edgeMask,
 		s("bld"), s("bd"), s("bdr"),
 	)
+
 	fmt.Println()
+
 	fmt.Printf("cmd: %s x %d\n", cmd, repeats)
 
 }
@@ -278,6 +320,7 @@ func (cube *Cube) help() {
 	fmt.Printf("example: UUUU returns to where it started\n")
 	fmt.Printf("help: ?\n")
 	fmt.Printf("new cube: n\n")
+	fmt.Printf("toggle ansi colors: a\n")
 	fmt.Printf("quit: q\n")
 }
 
@@ -436,9 +479,13 @@ func (cube *Cube) Loop() {
 	cmd := ""
 	repeats := 0
 	prevCmd := ""
+	useAnsi := true
 	cube.help()
+
 	for {
-		cube.Draw(cmd, repeats)
+		cube.Draw(cmd, repeats, useAnsi)
+
+		fmt.Printf("\u25B6 ")
 		rdr := bufio.NewReader(os.Stdin)
 		cmd, err := rdr.ReadString('\n')
 		if err != nil {
@@ -446,6 +493,11 @@ func (cube *Cube) Loop() {
 			continue
 		}
 		cmd = strings.TrimSpace(cmd)
+
+		if cmd == "a" {
+			useAnsi = !useAnsi
+			continue
+		}
 
 		if cmd == "q" {
 			break
@@ -458,7 +510,7 @@ func (cube *Cube) Loop() {
 
 		if cmd == "?" || cmd == "h" {
 			cube.help()
-			fmt.Scanln(&cmd)
+			fmt.Printf("\u25B6 ")
 		}
 
 		if cmd == prevCmd || cmd == "" {
