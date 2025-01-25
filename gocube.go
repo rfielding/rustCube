@@ -259,6 +259,17 @@ func (cube *Cube) Turn1(f string, center bool) {
 			swap(e1a, e1b)
 		}
 	}
+	// make sure that there are still 9 stickers of every color!
+	counts := make(map[byte]int)
+	for _, v := range cube.Stickers {
+		color := v[0]
+		counts[color]++
+	}
+	for i := 0; i < cube.FaceCount; i++ {
+		if counts[cube.Faces[i][0]] != 9 {
+			panic(fmt.Sprintf("face %s has %d stickers", cube.Faces[i], counts[cube.Faces[i][0]]))
+		}
+	}
 }
 
 // turn a face *count* times, all cube or just a face
@@ -488,12 +499,8 @@ func (cube *Cube) Execute(node Node, negates int) {
 	} else {
 		if node.Face != "" {
 			turn := repeat
-			nstr := ""
-			if negates%2 == 1 {
-				nstr = "/"
-			}
-			fmt.Printf("%s%s%d ", nstr, node.Face, repeat)
 			turn = turn * (1 - 2*(negates%2))
+			fmt.Printf("%s%d ", node.Face, turn)
 			cube.Turn(node.Face, turn)
 		}
 	}
