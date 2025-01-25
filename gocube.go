@@ -348,6 +348,7 @@ func (cube *Cube) facesString(useAnsi bool, upperCase bool) string {
 }
 
 func (cube *Cube) help(useAnsi bool) {
+	cube.PrintRed("-----BEGIN HELP-----\n", useAnsi)
 	fmt.Printf("run with rlwrap for better keyboard handling\n")
 	fmt.Printf("conventions: Up Right Front Down Left Back\n")
 	fmt.Printf("reverse turn '/', like: /u\n")
@@ -357,21 +358,26 @@ func (cube *Cube) help(useAnsi bool) {
 	fmt.Printf("reps: (ru)2 => ruru\n")
 	fmt.Printf("commutators: ((ru)/(ur))6 => ()\n")
 	fmt.Printf("identity: (ru)/(ru) => ()\n")
-	fmt.Printf("period 4: [fr]3u[fr]3\n")
-	fmt.Printf("period 4: [fb]2u[fb]4\n")
-	fmt.Printf("example: u r /u /r\n")
+	fmt.Printf("identity: [rf]/[rf]] => ()\n")
+	fmt.Println()
+	fmt.Printf("example: u r /u /r = [ur] \n")
 	fmt.Printf("example: ((fr)/(rf))3 u ((fr)/(rf))3 /u  -- nested commutator\n")
 	fmt.Printf("example: ((fd)/(df))4 u ((fd)/(df))2 /u  -- nested commutator\n")
 	fmt.Printf("example: ((/rd)/(d/r)) dd ((f/d)/(/df))  -- nested commutator\n")
+	fmt.Printf("example: [f r]3 u [f r]3 /u\n")
+	fmt.Printf("example: [f b]2 u [f b]4 /u\n")
 	fmt.Printf("example: UUUU returns to where it started\n")
 	fmt.Printf("example: nru => start from new cube, then ru\n")
-	fmt.Printf("help: ?\n")
+	fmt.Printf("example: n(fdrfdbl)5 -- for a deterministic scramble, you can find in rlwrap history\n")
+	fmt.Println()
+	fmt.Printf("help: ? or h\n")
 	fmt.Printf("new cube: n\n")
 	fmt.Printf("toggle ansi colors: a\n")
 	fmt.Printf("quit: q\n")
+	fmt.Println()
 	fmt.Printf("turn a face: %s\n", cube.facesString(useAnsi, false))
 	fmt.Printf("turn cube:   %s\n", cube.facesString(useAnsi, true))
-	fmt.Println()
+	cube.PrintRed("-----END HELP-----\n", useAnsi)
 }
 
 type Node struct {
