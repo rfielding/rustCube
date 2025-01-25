@@ -315,11 +315,41 @@ func (cube *Cube) shouldTurnCube(f string) bool {
 	return false
 }
 
-func (cube *Cube) help() {
+func (cube *Cube) facesString(useAnsi bool, upperCase bool) string {
+	if !useAnsi {
+		return " U  R  F  D  L  B"
+	}
+	ansiColors := map[string]string{
+		"u": "\u001b[1;37m%s\u001b[0m",
+		"r": "\u001b[1;34m%s\u001b[0m",
+		"f": "\u001b[1;31m%s\u001b[0m",
+		"d": "\u001b[1;33m%s\u001b[0m",
+		"l": "\u001b[1;32m%s\u001b[0m",
+		"b": "\u001b[1;35m%s\u001b[0m",
+	}
+
+	uc := func(s string) string {
+		if upperCase {
+			return strings.ToUpper(s)
+		}
+		return s
+	}
+
+	// use the middle piece location to find the color
+	// for u r f d l b
+	return fmt.Sprintf(" %s  %s  %s  %s  %s  %s",
+		fmt.Sprintf(ansiColors[cube.Stickers["u"]], uc("u")),
+		fmt.Sprintf(ansiColors[cube.Stickers["r"]], uc("r")),
+		fmt.Sprintf(ansiColors[cube.Stickers["f"]], uc("f")),
+		fmt.Sprintf(ansiColors[cube.Stickers["d"]], uc("d")),
+		fmt.Sprintf(ansiColors[cube.Stickers["l"]], uc("l")),
+		fmt.Sprintf(ansiColors[cube.Stickers["b"]], uc("b")),
+	)
+}
+
+func (cube *Cube) help(useAnsi bool) {
 	fmt.Printf("run with rlwrap for better keyboard handling\n")
 	fmt.Printf("conventions: Up Right Front Down Left Back\n")
-	fmt.Printf("turn a face: u r f d l b\n")
-	fmt.Printf("turn cube:   U R F D L B\n")
 	fmt.Printf("reverse turn '/', like: /u\n")
 	fmt.Printf("commutator: [ur] => ur/u/r\n")
 	fmt.Printf("neg parens: /(ur) => /u/r\n")
@@ -330,7 +360,6 @@ func (cube *Cube) help() {
 	fmt.Printf("period 4: [fr]3u[fr]3\n")
 	fmt.Printf("period 4: [fb]2u[fb]4\n")
 	fmt.Printf("example: u r /u /r\n")
-	//fmt.Printf("note: square brackets not completely correct yet.\n")
 	fmt.Printf("example: ((fr)/(rf))3 u ((fr)/(rf))3 /u  -- nested commutator\n")
 	fmt.Printf("example: ((fd)/(df))4 u ((fd)/(df))2 /u  -- nested commutator\n")
 	fmt.Printf("example: ((/rd)/(d/r)) dd ((f/d)/(/df))  -- nested commutator\n")
@@ -340,6 +369,9 @@ func (cube *Cube) help() {
 	fmt.Printf("new cube: n\n")
 	fmt.Printf("toggle ansi colors: a\n")
 	fmt.Printf("quit: q\n")
+	fmt.Printf("turn a face: %s\n", cube.facesString(useAnsi, false))
+	fmt.Printf("turn cube:   %s\n", cube.facesString(useAnsi, true))
+	fmt.Println()
 }
 
 type Node struct {
@@ -522,7 +554,7 @@ func (cube *Cube) Loop() {
 	repeats := 0
 	prevCmd := ""
 	useAnsi := true
-	cube.help()
+	cube.help(useAnsi)
 
 	for {
 		cube.Draw(cmd, repeats, useAnsi)
@@ -553,7 +585,7 @@ func (cube *Cube) Loop() {
 		}
 
 		if cmd == "?" || cmd == "h" {
-			cube.help()
+			cube.help(useAnsi)
 			continue
 		}
 
