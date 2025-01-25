@@ -408,7 +408,9 @@ func (node Node) Print() string {
 		v += node.Face
 	}
 	if node.Repeat != 0 {
-		v += fmt.Sprintf("%d", node.Repeat)
+		if node.Repeat != 1 {
+			v += fmt.Sprintf("%d", node.Repeat)
+		}
 	}
 	return v
 }
