@@ -416,10 +416,47 @@ func (node Node) Print() string {
 }
 
 // parseParentheses parses the input string and constructs a nested Node structure.
-func Parse(input string) Node {
+func Parse(input string) (Node, error) {
+	openParenCount := 0
+	closeParenCount := 0
+	parenBalance := 0
+	openBracketCount := 0
+	closeBracketCount := 0
+	bracketBalance := 0
+	for i := 0; i < len(input); i++ {
+		char := input[i]
+		switch char {
+		case '(':
+			openParenCount++
+			parenBalance++
+		case ')':
+			closeParenCount++
+			parenBalance--
+			if parenBalance < 0 {
+				return Node{}, fmt.Errorf("unbalanced parentheses, (, and )")
+			}
+		case '[':
+			openBracketCount++
+			bracketBalance++
+		case ']':
+			closeBracketCount++
+			bracketBalance--
+			if bracketBalance < 0 {
+				return Node{}, fmt.Errorf("unbalanced brackets, [, and ]")
+			}
+		}
+	}
+	if openParenCount != closeParenCount {
+		return Node{}, fmt.Errorf("unbalanced parentheses, (, and )")
+	}
+	if openBracketCount != closeBracketCount {
+		return Node{}, fmt.Errorf("unbalanced brackets, [, and 	]")
+	}
+
 	stack := [][]Node{{}}
 	nstack := make([]bool, 0)
 	wasNegated := false
+
 	for i := 0; i < len(input); i++ {
 		char := input[i]
 
@@ -482,12 +519,12 @@ func Parse(input string) Node {
 			// ignore
 		default:
 			// why do spaces make it stop? return nothing if it wont be interpreted right.
-			return Node{}
+			return Node{}, fmt.Errorf("unexpected character: %c", char)
 		}
 		// don't skip unless you set these
 		wasNegated = false
 	}
-	return Node{Arr: stack[0]}
+	return Node{Arr: stack[0]}, nil
 }
 
 func reverse[T any](s []T) {
@@ -558,6 +595,15 @@ func (cube *Cube) Execute(node Node, negates int) {
 	}
 }
 
+// print a message in red if ansi
+func (cube *Cube) PrintRed(msg string, useAnsi bool) {
+	if useAnsi {
+		fmt.Printf("\u001b[1;31m%s\u001b[0m\n", msg)
+	} else {
+		fmt.Printf("%s\n", msg)
+	}
+}
+
 func (cube *Cube) Loop() {
 	// loop to get and anlyze a line and draw the screen
 	cmd := ""
@@ -613,7 +659,13 @@ func (cube *Cube) Loop() {
 			cube = NewCube()
 			cmd = cmd[1:]
 		}
-		nodes := Parse(cmd)
+		nodes, err := Parse(cmd)
+		if err != nil {
+			cube.help(useAnsi)
+			msg := fmt.Sprintf("parse error. see help above: %s\n", err)
+			cube.PrintRed(msg, useAnsi)
+			continue
+		}
 		fmt.Printf("parsed as: %s\n", nodes.Print())
 		cube.Execute(nodes, 0)
 		fmt.Println()
