@@ -548,6 +548,7 @@ func (cube *Cube) Loop() {
 
 		if cmd == "n" {
 			cube = NewCube()
+			repeats = 0
 			continue
 		}
 
