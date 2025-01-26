@@ -683,7 +683,7 @@ func (cube *Cube) Execute(node Node, negates int) (string, error) {
 				if reversed {
 					reverse(theArr)
 				}
-			} else if node.Commutator {
+			} else {
 				theArr := node.Arr
 				negCount := negates
 				if node.Negate {
