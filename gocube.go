@@ -504,7 +504,7 @@ func (cube *Cube) facesString(useAnsi bool, upperCase bool) string {
 	)
 }
 
-func colorStr(useAnsi bool, color int, s string) string {
+func (cube *Cube) colorStr(useAnsi bool, color int, s string) string {
 	if !useAnsi {
 		return s
 	}
@@ -514,6 +514,7 @@ func colorStr(useAnsi bool, color int, s string) string {
 func (cube *Cube) Help(useAnsi bool) {
 	cube.PrintRed("-----BEGIN HELP-----\n", useAnsi)
 	fmt.Printf("run inside rlwrap for better keyboard handling!\n")
+	fmt.Printf("from: %s\n", cube.colorStr(useAnsi, 32, "https://github.com/rfielding/rustCube"))
 	fmt.Printf("conventions: Up Right Front Down Left Back\n")
 	fmt.Printf("reverse a turn with '/', like: /u\n")
 	//fmt.Printf("commutator:  [ur] =>  u r /u /r\n")
@@ -527,7 +528,7 @@ func (cube *Cube) Help(useAnsi bool) {
 	for i := range cube.EqTest {
 		for j := 0; j < len(cube.EqTest[i]); j++ {
 			if j == 0 {
-				fmt.Printf("%s ", colorStr(useAnsi, 34, "example:"))
+				fmt.Printf("%s ", cube.colorStr(useAnsi, 34, "example:"))
 			} else {
 				fmt.Printf(" == ")
 			}
@@ -539,8 +540,8 @@ func (cube *Cube) Help(useAnsi bool) {
 		}
 		fmt.Println()
 	}
-	fmt.Printf("%s nru         -- start from new cube, then ru\n", colorStr(useAnsi, 34, "example:"))
-	fmt.Printf("%s n(fdrfdbl)5 -- for a deterministic scramble, you can find in rlwrap history\n", colorStr(useAnsi, 34, "example:"))
+	fmt.Printf("%s nru         -- start from new cube, then ru\n", cube.colorStr(useAnsi, 34, "example:"))
+	fmt.Printf("%s n(fdrfdbl)5 -- for a deterministic scramble, you can find in rlwrap history\n", cube.colorStr(useAnsi, 34, "example:"))
 	fmt.Println()
 	fmt.Printf("help: ? or h\n")
 	fmt.Printf("new cube: n\n")
