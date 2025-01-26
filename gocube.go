@@ -37,11 +37,13 @@ type Node struct {
 	Repeat     int
 }
 
+/*
 func reverse[T any](s []T) {
 	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
 		s[i], s[j] = s[j], s[i]
 	}
 }
+*/
 
 func stripComment(s string) string {
 	return strings.Trim(strings.Split(s, "-")[0], " ")
@@ -707,43 +709,44 @@ func (cube *Cube) Execute(node Node, negates int) (string, error) {
 		negates++
 	}
 	if node.Arr != nil {
+
+		fwd := make([]Node, 0)
+		rev := make([]Node, 0)
+		for i := 0; i < len(node.Arr); i++ {
+			fwd = append(fwd, node.Arr[i])
+			rev = append(rev, node.Arr[len(node.Arr)-1-i])
+		}
+
 		// interpret as repeats bind latest
 		for i := 0; i < repeat; i++ {
 			if !node.Commutator {
 				reversed := negates%2 == 1
-				theArr := node.Arr
 				if reversed {
-					reverse(theArr)
+					fwd, rev = rev, fwd
 				}
-				for _, cmd := range theArr {
+				for _, cmd := range fwd {
 					result, err := cube.Execute(cmd, negates)
 					if err != nil {
 						return outcome, fmt.Errorf("error in %s at %s: %s", outcome, result, err)
 					}
 					outcome += result
 				}
-				if reversed {
-					reverse(theArr)
-				}
 			} else {
 				// using commutator notion of inverse comes second, because, see the notation mess if not?
 				// [fr] = (rf)/(fr) = r f /r /f
 				// [fr][rf] = r f /r /f f r /f /r
-
-				arr1 := node.Arr
 				if negates%2 == 1 {
-					reverse(arr1)
+					fwd, rev = rev, fwd
 				}
 				if negates%2 == 0 {
-					arr := node.Arr
-					for _, cmd := range arr {
+					for _, cmd := range fwd {
 						result, err := cube.Execute(cmd, negates)
 						if err != nil {
 							return outcome, fmt.Errorf("error in %s at %s: %s", outcome, result, err)
 						}
 						outcome += result
 					}
-					for _, cmd := range arr {
+					for _, cmd := range fwd {
 						result, err := cube.Execute(cmd, negates+1)
 						if err != nil {
 							return outcome, fmt.Errorf("error in %s at %s: %s", outcome, result, err)
