@@ -42,6 +42,10 @@ func reverse[T any](s []T) {
 	}
 }
 
+func stripComment(s string) string {
+	return strings.Trim(strings.Split(s, "-")[0], " ")
+}
+
 /*
 It seems a little strange to do this instead of standard Go test, but
 I will include integration tests if I am to provide internal parameters,
@@ -73,7 +77,7 @@ func (cube *Cube) PostTest() {
 
 	for i := range cube.EqTest {
 		// check the INTERPRETATION after a parse
-		s := cube.EqTest[i][0]
+		s := stripComment(cube.EqTest[i][0])
 
 		cube1 := NewCube()
 		parsed := checkInterpretation(s, cube1)
@@ -82,7 +86,7 @@ func (cube *Cube) PostTest() {
 		// compare next string cubes to current cube state.
 		// stickers should be the same to pass the test.
 		for j := 1; j < len(cube.EqTest[i]); j++ {
-			s2 := cube.EqTest[i][j]
+			s2 := stripComment(cube.EqTest[i][j])
 
 			cube2 := NewCube()
 			parsed2 := checkInterpretation(s2, cube2)
@@ -136,19 +140,20 @@ func NewCube() *Cube {
 		Stickers: make(map[string]string),
 		// examples in the expected re-parse format, to pin down language semantics
 		EqTest: [][]string{
-			{"r u"},
-			{"r u f"},
-			{"u u u u", ""},
-			{"U U U U", ""},
-			{"(f r) /(f r)", "f r /r /f", ""},
-			{"[f r] /[f r]", "f r /r /f /f /r r f", ""},
-			{"r (u f)2", "r u f u f"},
-			{"[f r]3 u /[f r]3 /u"},
-			{"[[f r]3 u]"},
-			{"[f r]2 l /[f r]2 /l"},
-			//{"[[f r]2 l]", "[f r]2 l /[f r]2 /l"},  -- this is a minor bug in commutator that would allow high level commutators
-			{"/(f r)", "(/r /f)"},
+			{"r u           -- trivial move pair"},
+			{"r u f         -- trivial move triple"},
+			{"u u u u       -- identity move does nothing in the end", ""},
+			{"U U U U       -- this just physically spins the cube around to where it started", ""},
+			{"(f r) /(f r)  -- commutator written explicitly", "f r /r /f", ""},
+			{"[f r] /[f r]  -- commutator divided by itself", "f r /r /f /f /r r f", ""},
+			{"r (u f)2      -- repetition", "r u f u f"},
+			//{"[[f r]2 l]", "[f r]2 l /[f r]2 /l"},  -- bug in commutator that would allow high level commutators
 			//{"/[f r]", "/r /f r f"},
+			{"/(f r)        -- negate swaps order as well as logical negate list items", "(/r /f)"},
+			{"/r d r d f /d /f d - - place middle corner when u face solved", "[/r d] d2 [f /d]"},
+			{"[f r]3 u /[f r]3 /u  -- cycle corners"},
+			{"[((f r) /(r f))3 u]     -- nested commutator [] bug: do not nest []"},
+			{"[f r]2 l /[f r]2 /l  -- edge cyle"},
 			{""},
 		},
 	}
@@ -527,7 +532,7 @@ func (node Node) Print() string {
 // parseParentheses parses the input string and constructs a nested Node structure.
 func (cube *Cube) Parse(input string) (Node, error) {
 	// string comments with --
-	input = strings.Split(input, "--")[0]
+	input = stripComment(input)
 
 	// parenthesis balance
 	openParenCount := 0
@@ -551,6 +556,11 @@ func (cube *Cube) Parse(input string) (Node, error) {
 		case '[':
 			openBracketCount++
 			bracketBalance++
+			if bracketBalance > 1 {
+				return Node{}, fmt.Errorf(
+					"Nested commutators not yet working. Write inner commutators explicitly. [[x y] z] as [((xy)/(yx)) z]",
+				)
+			}
 		case ']':
 			closeBracketCount++
 			bracketBalance--
