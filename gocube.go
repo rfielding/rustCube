@@ -470,17 +470,16 @@ func (cube *Cube) Help(useAnsi bool) {
 	for i := range cube.EqTest {
 		for j := 0; j < len(cube.EqTest[i]); j++ {
 			if j == 0 {
-				fmt.Printf("example: ")
+				fmt.Printf("\u001b[1;34mexample:\u001b[0m ")
 			} else {
 				fmt.Printf(" == ")
 			}
 			fmt.Printf("%s", cube.EqTest[i][j])
-			fmt.Println()
 		}
-		fmt.Printf("example: %s\n", cube.EqTest[i][0])
+		fmt.Println()
 	}
-	fmt.Printf("example: nru => start from new cube, then ru\n")
-	fmt.Printf("example: n(fdrfdbl)5 -- for a deterministic scramble, you can find in rlwrap history\n")
+	fmt.Printf("\u001b[1;34mexample:\u001b[0m nru         -- start from new cube, then ru\n")
+	fmt.Printf("\u001b[1;34mexample:\u001b[0m n(fdrfdbl)5 -- for a deterministic scramble, you can find in rlwrap history\n")
 	fmt.Println()
 	fmt.Printf("help: ? or h\n")
 	fmt.Printf("new cube: n\n")
@@ -527,6 +526,10 @@ func (node Node) Print() string {
 
 // parseParentheses parses the input string and constructs a nested Node structure.
 func (cube *Cube) Parse(input string) (Node, error) {
+	// string comments with --
+	input = strings.Split(input, "--")[0]
+
+	// parenthesis balance
 	openParenCount := 0
 	closeParenCount := 0
 	parenBalance := 0
