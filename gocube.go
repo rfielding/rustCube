@@ -196,7 +196,7 @@ func NewCube() *Cube {
 			{"r (u f)2        -- repetition", "r u f u f"},
 			{"/(/(b d))       -- nested parens", "b d"},
 			{"/(d /(b d /r))  -- nested parens", "b d /r /d"},
-			{"/[f r]          -- negate a commutator", "r f /r /f"},
+			//{"/[f r]          -- negate a commutator", "r f /r /f"},
 			{"/(f r)          -- negate swaps order as well as logical negate list items", "(/r /f)"},
 			{"((f r) /(r f))3 u /((f r) /(r f))3 /u -- cycle corners, nested commutator, 1 corner orbit"},
 			{"((f d) /(d f))2 u /((f d) /(d f))2 /u -- twist corners in place, nested commutator, 1 corner orbit"},
