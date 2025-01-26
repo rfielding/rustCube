@@ -665,9 +665,12 @@ func (cube *Cube) Execute(node Node, negates int) (string, error) {
 	if node.Arr != nil {
 		// interpret as repeats bind latest
 		for i := 0; i < repeat; i++ {
-			if negates%2 == 1 && !node.Commutator {
+			if !node.Commutator {
+				reversed := negates%2 == 1
 				theArr := node.Arr
-				reverse(theArr)
+				if reversed {
+					reverse(theArr)
+				}
 				for _, cmd := range theArr {
 					result, err := cube.Execute(cmd, negates)
 					if err != nil {
@@ -675,7 +678,9 @@ func (cube *Cube) Execute(node Node, negates int) (string, error) {
 					}
 					outcome += result
 				}
-				reverse(theArr)
+				if reversed {
+					reverse(theArr)
+				}
 			} else if node.Commutator && !node.Negate {
 				for _, cmd := range node.Arr {
 					result, err := cube.Execute(cmd, negates)
@@ -709,14 +714,6 @@ func (cube *Cube) Execute(node Node, negates int) (string, error) {
 					outcome += result
 				}
 				reverse(theArr)
-			} else {
-				for _, cmd := range node.Arr {
-					result, err := cube.Execute(cmd, negates)
-					if err != nil {
-						return outcome, fmt.Errorf("error in %s at %s: %s", outcome, result, err)
-					}
-					outcome += result
-				}
 			}
 		}
 	} else {
