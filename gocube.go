@@ -146,7 +146,7 @@ func NewCube() *Cube {
 			{"u u u u       -- faces have period 4", ""},
 			{"U U U U       -- cube rotations have period 4", ""},
 			{"(f r) /(f r)  -- commutator written explicitly", "f r /r /f", ""},
-			{"[f r] /[f r]  -- commutator divided by itself", "f r /r /f /f /r r f", ""},
+			{"[f r] /[f r]  -- commutator divided by itself", "f r /f /r r f /r /f", ""},
 			{"r (u f)2      -- repetition", "r u f u f"},
 			//{"[[f r]2 l]", "[f r]2 l /[f r]2 /l"},  -- bug in commutator that would allow high level commutators
 			//{"/[f r]", "/r /f r f"},
