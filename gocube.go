@@ -150,9 +150,9 @@ func NewCube() *Cube {
 			//{"[[f r]2 l]", "[f r]2 l /[f r]2 /l"},  -- bug in commutator that would allow high level commutators
 			//{"/[f r]", "/r /f r f"},
 			{"/(f r)        -- negate swaps order as well as logical negate list items", "(/r /f)"},
-			{"/r d r d f /d /f d - - place middle corner when u face solved", "[/r d] d2 [f /d]"},
+			{"/r d r d f /d /f d   -- place middle corner when u face solved", "[/r d] d2 [f /d]"},
 			{"[f r]3 u /[f r]3 /u  -- cycle corners"},
-			{"[((f r) /(r f))3 u]     -- nested commutator [] bug: do not nest []"},
+			{"[((f r) /(r f))3 u]  -- no commutator nesting, inner commutators must be written with parens"},
 			{"[f r]2 l /[f r]2 /l  -- edge cyle"},
 			{""},
 		},
@@ -479,7 +479,11 @@ func (cube *Cube) Help(useAnsi bool) {
 			} else {
 				fmt.Printf(" == ")
 			}
-			fmt.Printf("%s", cube.EqTest[i][j])
+			v := cube.EqTest[i][j]
+			if v == "" {
+				v = "()"
+			}
+			fmt.Printf("%s", v)
 		}
 		fmt.Println()
 	}
