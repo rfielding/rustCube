@@ -182,6 +182,7 @@ func NewCube() *Cube {
 		Stickers: make(map[string]string),
 		// examples in the expected re-parse format, to pin down language semantics
 		// commented out items are TODO to get working, failing invertability checks
+		// they all involve commutators
 		EqTest: [][]string{
 			{"r u             -- trivial move pair"},
 			{"(r f /r /f)6    -- adjacent faces, where commutators have period 6"},
@@ -196,6 +197,9 @@ func NewCube() *Cube {
 			{"/(d /(b d /r))  -- nested parens", "b d /r /d"},
 			{"/[f r]          -- negate a commutator", "r f /r /f"},
 			{"/(f r)          -- negate swaps order as well as logical negate list items", "(/r /f)"},
+			{"((f r) /(r f))3 u /((f r) /(r f))3 /u -- cycle corners, nested commutator, 1 corner orbit"},
+			{"((f d) /(d f))2 u /((f d) /(d f))2 /u -- twist corners in place, nested commutator, 1 corner orbit"},
+			//{"[f r]3 u [r f]3 /u -- cycle corners, 1 corner orbit"},
 			//{"/r d r d f /d /f d   -- place middle corner when u face solved"}, "[/r d] d2 [f /d]"},
 			//{"[f r]3 u /[f r]3 /u  -- cycle corners, 1 corner orbit"},
 			//{"[((f r) /(r f))3 u]  -- no commutator nesting, inner commutators must use parens to make a list of 2 in commutator"},
