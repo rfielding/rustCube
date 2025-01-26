@@ -186,12 +186,13 @@ func NewCube() *Cube {
 		EqTest: [][]string{
 			{"r u             -- trivial move pair"},
 			{"(r f /r /f)6    -- adjacent faces, where commutators have period 6"},
-			{"[r f]6          -- adjacent faces have period 6 "},
+			//{"[r f]6          -- adjacent faces have period 6 "},
 			{"u u u u         -- faces have period 4", ""},
 			{"U U U U         -- cube rotations have period 4", ""},
-			{"[r f] [f r]     -- inverse commutator is reversed input", "[r f] /[r f]", ""},
+			{"((f r) /(r f))     -- commutators, extract non-commutative part of 2 objects"},
+			//{"[r f] [f r]     -- inverse commutator is reversed input", "[r f] /[r f]", ""},
 			{"(f r) /(f r)    -- commutator written explicitly", "f r /r /f", ""},
-			{"[f r] /[f r]    -- commutator divided by itself", "f r /f /r r f /r /f", ""},
+			//{"[f r] /[f r]    -- commutator divided by itself", "f r /f /r r f /r /f", ""},
 			{"r (u f)2        -- repetition", "r u f u f"},
 			{"/(/(b d))       -- nested parens", "b d"},
 			{"/(d /(b d /r))  -- nested parens", "b d /r /d"},
@@ -513,13 +514,13 @@ func (cube *Cube) Help(useAnsi bool) {
 	fmt.Printf("run inside rlwrap for better keyboard handling!\n")
 	fmt.Printf("conventions: Up Right Front Down Left Back\n")
 	fmt.Printf("reverse a turn with '/', like: /u\n")
-	fmt.Printf("commutator:  [ur] =>  u r /u /r\n")
+	//fmt.Printf("commutator:  [ur] =>  u r /u /r\n")
 	fmt.Printf("neg parens:  /(u r) => /r /u\n")
 	fmt.Printf("reps:        u2 => uu\n")
 	fmt.Printf("reps:        (ru)2 => ruru\n")
 	fmt.Printf("commutators: ((ru)/(ur))6 => ()\n")
 	fmt.Printf("identity:    (ru)/(ru) => ()\n")
-	fmt.Printf("identity:    [rf]/[rf]] => ()\n")
+	//fmt.Printf("identity:    [rf]/[rf]] => ()\n")
 	fmt.Println()
 	for i := range cube.EqTest {
 		for j := 0; j < len(cube.EqTest[i]); j++ {
