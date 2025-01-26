@@ -182,7 +182,7 @@ func NewCube() *Cube {
 		Stickers: make(map[string]string),
 		// examples in the expected re-parse format, to pin down language semantics
 		// commented out items are TODO to get working, failing invertability checks
-		// they all involve commutators
+		// they all involve negated commutators
 		EqTest: [][]string{
 			{"r u             -- trivial move pair"},
 			{"(r f /r /f)6    -- adjacent faces, where commutators have period 6"},
