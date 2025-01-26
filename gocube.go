@@ -619,12 +619,6 @@ func (cube *Cube) Parse(input string) (Node, error) {
 		case '[':
 			openBracketCount++
 			bracketBalance++
-			if bracketBalance > 1 {
-				cube.PrintRed(
-					"Nested commutators not yet working. Write inner commutators explicitly. [[fr]3 u] as [((fr)/(rf))3 u]",
-					true,
-				)
-			}
 		case ']':
 			closeBracketCount++
 			bracketBalance--
