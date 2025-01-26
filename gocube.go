@@ -596,7 +596,8 @@ func (cube *Cube) Parse(input string) (Node, error) {
 	return Node{Arr: stack[0]}, nil
 }
 
-func (cube *Cube) Execute(node Node, negates int) {
+func (cube *Cube) Execute(node Node, negates int) (string, error) {
+	outcome := ""
 	repeat := 1
 	if node.Repeat != 0 {
 		repeat = node.Repeat
@@ -611,32 +612,53 @@ func (cube *Cube) Execute(node Node, negates int) {
 				theArr := node.Arr
 				reverse(theArr)
 				for _, cmd := range theArr {
-					// (ru)/(ru) => ()
-					// (fr)/(rf) => [fr]
-					// /(/(fr)) => ((fr))
-					cube.Execute(cmd, negates)
+					result, err := cube.Execute(cmd, negates)
+					if err != nil {
+						return outcome, fmt.Errorf("error in %s at %s: %s", outcome, result, err)
+					}
+					outcome += result
 				}
 				reverse(theArr)
 			} else if node.Commutator && !node.Negate {
 				for _, cmd := range node.Arr {
-					cube.Execute(cmd, negates)
+					result, err := cube.Execute(cmd, negates)
+					if err != nil {
+						return outcome, fmt.Errorf("error in %s at %s: %s", outcome, result, err)
+					}
+					outcome += result
 				}
 				for _, cmd := range node.Arr {
-					cube.Execute(cmd, negates+1)
+					result, err := cube.Execute(cmd, negates+1)
+					if err != nil {
+						return outcome, fmt.Errorf("error in %s at %s: %s", outcome, result, err)
+					}
+					outcome += result
 				}
 			} else if node.Commutator && node.Negate {
 				theArr := node.Arr
 				reverse(theArr)
 				for _, cmd := range node.Arr {
-					cube.Execute(cmd, negates+1)
+					result, err := cube.Execute(cmd, negates+1)
+					if err != nil {
+						return outcome, fmt.Errorf("error in %s at %s: %s", outcome, result, err)
+					}
+					outcome += result
 				}
 				for _, cmd := range node.Arr {
-					cube.Execute(cmd, negates)
+					result, err := cube.Execute(cmd, negates)
+					if err != nil {
+						return outcome, fmt.Errorf("error in %s at %s: %s", outcome, result, err)
+					}
+					outcome += result
 				}
 				reverse(theArr)
 			} else {
 				for _, cmd := range node.Arr {
-					cube.Execute(cmd, negates)
+					result, err := cube.Execute(cmd, negates)
+					if err != nil {
+						return outcome, fmt.Errorf("error in %s at %s: %s", outcome, result, err)
+					}
+					outcome += result
 				}
 			}
 		}
@@ -649,13 +671,14 @@ func (cube *Cube) Execute(node Node, negates int) {
 				rstr = fmt.Sprintf("%d", repeat)
 			}
 			if negates%2 == 0 {
-				fmt.Printf("%s%s ", node.Face, rstr)
+				outcome += fmt.Sprintf("%s%s ", node.Face, rstr)
 			} else {
-				fmt.Printf("/%s%s ", node.Face, rstr)
+				outcome += fmt.Sprintf("/%s%s ", node.Face, rstr)
 			}
 			cube.Turn(node.Face, turn)
 		}
 	}
+	return outcome, nil
 }
 
 // print a message in red if ansi
@@ -729,8 +752,16 @@ func (cube *Cube) Loop() {
 			cube.PrintRed(msg, useAnsi)
 			continue
 		}
+
 		fmt.Printf("parsed as: %s\n", nodes.Print())
-		cube.Execute(nodes, 0)
+		flattened, err := cube.Execute(nodes, 0)
+		if err != nil {
+			cube.Help(useAnsi)
+			msg := fmt.Sprintf("execute error. see help above: %s\n", err)
+			cube.PrintRed(msg, useAnsi)
+			continue
+		}
+		fmt.Printf("executed moves: %s\n", flattened)
 		fmt.Println()
 		fmt.Println()
 	}
