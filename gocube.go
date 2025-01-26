@@ -152,9 +152,10 @@ func NewCube() *Cube {
 			//{"/[f r]", "/r /f r f"},
 			{"/(f r)        -- negate swaps order as well as logical negate list items", "(/r /f)"},
 			{"/r d r d f /d /f d   -- place middle corner when u face solved", "[/r d] d2 [f /d]"},
-			{"[f r]3 u /[f r]3 /u  -- cycle corners"},
+			{"[f r]3 u /[f r]3 /u  -- cycle corners, 1 corner orbit"},
 			{"[((f r) /(r f))3 u]  -- no commutator nesting, inner commutators must use parens to make a list of 2 in commutator"},
-			{"[f r]2 l /[f r]2 /l  -- edge cyle"},
+			{"[f r]2 l /[f r] /l  -- edge cyle, 1 edge orbit"},
+			{"[((f r) /(r f)) l]  -- edge cyle, 1 edge orbit"},
 			{""},
 		},
 	}
@@ -464,15 +465,6 @@ func (cube *Cube) Help(useAnsi bool) {
 	fmt.Printf("identity:    (ru)/(ru) => ()\n")
 	fmt.Printf("identity:    [rf]/[rf]] => ()\n")
 	fmt.Println()
-	/*
-		fmt.Printf("example: u r /u /r = [ur] \n")
-		fmt.Printf("example: ((fr)/(rf))3 u ((fr)/(rf))3 /u  -- nested commutator\n")
-		fmt.Printf("example: ((fd)/(df))4 u ((fd)/(df))2 /u  -- nested commutator\n")
-		fmt.Printf("example: ((/rd)/(d/r)) dd ((f/d)/(/df))  -- nested commutator\n")
-		fmt.Printf("example: [f r]3 u [f r]3 /u\n")
-		fmt.Printf("example: [f b]2 u [f b]4 /u\n")
-		fmt.Printf("example: UUUU returns to where it started\n")
-	*/
 	for i := range cube.EqTest {
 		for j := 0; j < len(cube.EqTest[i]); j++ {
 			if j == 0 {
