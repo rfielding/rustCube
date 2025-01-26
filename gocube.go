@@ -145,6 +145,7 @@ func NewCube() *Cube {
 			{"[r f]6          -- adjacent faces have period 6 "},
 			{"u u u u         -- faces have period 4", ""},
 			{"U U U U         -- cube rotations have period 4", ""},
+			{"[r f] [f r]    -- inverse commutator is reversed input", "[r f] /[r f]", ""},
 			{"(f r) /(f r)    -- commutator written explicitly", "f r /r /f", ""},
 			{"[f r] /[f r]    -- commutator divided by itself", "f r /f /r r f /r /f", ""},
 			{"r (u f)2        -- repetition", "r u f u f"},
