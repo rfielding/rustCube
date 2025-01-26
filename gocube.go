@@ -24,7 +24,47 @@ type Cube struct {
 	Adj        map[string][]string
 	Faces      []string
 	Opposite   map[string]string
-	Stickers   map[string]string // urf -> u, ur = u, rfu -> r, ...
+	Stickers   map[string]string
+	EqTest     [][]string
+}
+
+/*
+It seems a little strange to do this instead of standard Go test, but
+I will include integration tests if I am to provide internal parameters,
+for example to hook up to OpenAI and ask it to solve cubes.
+
+But any parameters not compiled in would be cause to do a PostTest.
+*/
+func (cube *Cube) PostTest() {
+	for i := range cube.EqTest {
+		// check the interpretation
+		s := cube.EqTest[i][0]
+		expect := "(" + s + ")"
+		parsed, err := cube.Parse(s)
+		if err != nil {
+			panic(fmt.Sprintf("parse error on example %s: %s\n", s, err))
+		}
+		got := parsed.Print()
+		if expect != got {
+			panic(fmt.Sprintf("expect interpretation of %s to be: %s\n", expect, got))
+		}
+		// compare next string cubes to current cube state.
+		// stickers should be the same to pass the test.
+		for j := 1; j < len(cube.EqTest[i]); j++ {
+			nc := NewCube()
+			parsed2, err := nc.Parse(s)
+			if err != nil {
+				panic(fmt.Sprintf("parse error on example %s: %s\n", s, err))
+			}
+			_ = parsed2
+			// compare stickers
+			for k, v := range cube.Stickers {
+				if v != nc.Stickers[k] {
+					panic(fmt.Sprintf("stickers should be the same: %s %s %s\n", k, v, nc.Stickers[k]))
+				}
+			}
+		}
+	}
 }
 
 func NewCube() *Cube {
@@ -51,8 +91,24 @@ func NewCube() *Cube {
 			"l": {"u", "b", "d", "f"},
 			"b": {"u", "r", "d", "l"},
 		},
-		// state
+		// state of solve
 		Stickers: make(map[string]string),
+		// examples in the expected re-parse format, to pin down correctness of the parser
+		EqTest: [][]string{
+			{"r u"},
+			{"r u f"},
+			{"u u u u", ""},
+			{"U U U U", ""},
+			{"(f r) /(f r)", "f r /r /f", ""},
+			{"[f r] /[f r]", "f r /r /f /f /r r f", ""},
+			{"r (u f)2", "r u f u f"},
+			{"[f r]3 u /[f r]3 /u"},
+			{"[[f r]3 u]"},
+			{"[f r]2 l /[f r]2 /l"},
+			{"[[f r]2 l]", "[f r]4 l [f r]4 /l"},
+			{"/(f r)"},
+			{""},
+		},
 	}
 	// i,j,k are strings to located faces
 	// fi finds turn face, fj is an adjacent face to find j and k
@@ -422,7 +478,7 @@ func (node Node) Print() string {
 }
 
 // parseParentheses parses the input string and constructs a nested Node structure.
-func Parse(input string) (Node, error) {
+func (cube *Cube) Parse(input string) (Node, error) {
 	openParenCount := 0
 	closeParenCount := 0
 	parenBalance := 0
@@ -665,7 +721,7 @@ func (cube *Cube) Loop() {
 			cube = NewCube()
 			cmd = cmd[1:]
 		}
-		nodes, err := Parse(cmd)
+		nodes, err := cube.Parse(cmd)
 		if err != nil {
 			cube.help(useAnsi)
 			msg := fmt.Sprintf("parse error. see help above: %s\n", err)
@@ -681,5 +737,7 @@ func (cube *Cube) Loop() {
 
 func main() {
 	cube := NewCube()
+	// accumulate a set of identities and transformations that must work
+	cube.PostTest()
 	cube.Loop()
 }
