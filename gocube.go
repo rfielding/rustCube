@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"os"
 	"strings"
@@ -90,7 +91,7 @@ func (cube *Cube) PostTest() {
 		if err != nil {
 			panic(fmt.Sprintf("parse error on example invertability chech %s: %s\n", s, err))
 		}
-		_, err = c1.Execute(node, 0)
+		ex1, err := c1.Execute(node, 0)
 		if err != nil {
 			panic(fmt.Sprintf("execute error on example invertability chech %s: %s\n", s, err))
 		}
@@ -98,7 +99,7 @@ func (cube *Cube) PostTest() {
 		if err != nil {
 			panic(fmt.Sprintf("parse error on example invertability chech %s: %s\n", sNot, err))
 		}
-		_, err = c1.Execute(node, 0)
+		ex2, err := c1.Execute(node, 0)
 		if err != nil {
 			panic(fmt.Sprintf("execute error on example invertability chech %s: %s\n", sNot, err))
 		}
@@ -106,9 +107,11 @@ func (cube *Cube) PostTest() {
 			if string(k[0]) != v {
 				panic(
 					fmt.Sprintf(
-						"inverse check: %s not inverted by %s\n",
+						"inverse check: %s not inverted by %s.\nfwd: %s\nrev: %s\n",
 						s,
 						sNot,
+						ex1,
+						ex2,
 					),
 				)
 			}
@@ -186,28 +189,30 @@ func NewCube() *Cube {
 		EqTest: [][]string{
 			{"r u             -- trivial move pair"},
 			{"(r f /r /f)6    -- adjacent faces, where commutators have period 6"},
-			//{"[r f]6          -- adjacent faces have period 6 "},
+			{"[r f]6          -- adjacent faces have period 6 "},
 			{"u u u u         -- faces have period 4", ""},
 			{"U U U U         -- cube rotations have period 4", ""},
-			{"((f r) /(r f))     -- commutators, extract non-commutative part of 2 objects"},
-			//{"[r f] [f r]     -- inverse commutator is reversed input", "[r f] /[r f]", ""},
-			{"(f r) /(f r)    -- commutator written explicitly", "f r /r /f", ""},
-			//{"[f r] /[f r]    -- commutator divided by itself", "f r /f /r r f /r /f", ""},
+			{"((f r) /(r f))   -- commutators, extract non-commutative part of 2 objects"},
+			{"[r f] [f r]     -- inverse commutator is reversed input", ""},
+			{"(f r) /(r f)    -- commutator written explicitly", "f r /f /r"},
+			//{"[f r] /[f r]    -- commutator divided by itself", ""},
 			{"r (u f)2        -- repetition", "r u f u f"},
 			{"/(/(b d))       -- nested parens", "b d"},
 			{"/(d /(b d /r))  -- nested parens", "b d /r /d"},
-			//{"/[f r]          -- negate a commutator", "r f /r /f"},
+			{"/[f r]          -- negate a commutator", "r f /r /f"},
 			{"/(f r)          -- negate swaps order as well as logical negate list items", "(/r /f)"},
 			{"((f r) /(r f))3 u /((f r) /(r f))3 /u -- cycle corners, nested commutator, 1 corner orbit"},
 			{"((f d) /(d f))2 u /((f d) /(d f))2 /u -- twist corners in place, nested commutator, 1 corner orbit"},
 			{"(((f r) /(r f))3 u) /(u ((f r) /(r f))3)     -- a nested commutator, cycle 3 corners, 1 corner orbit"},
 			{"(((f d) /(d f))3 u) /(u ((f d) /(d f))3)     -- a nested commutator, twist 3 corners, 1 corner orbit"},
-			//{"[f r]3 u [r f]3 /u -- cycle corners, 1 corner orbit"},
-			//{"/r d r d f /d /f d   -- place middle corner when u face solved"}, "[/r d] d2 [f /d]"},
-			//{"[f r]3 u /[f r]3 /u  -- cycle corners, 1 corner orbit"},
-			//{"[((f r) /(r f))3 u]  -- no commutator nesting, inner commutators must use parens to make a list of 2 in commutator"},
+			{"/[f r]"},
+			{"[f r]", "f r /f /r"},
+			//{"[f r]3 u [f r]3 /u -- cycle corners, 1 corner orbit"},
+			{"/r d r d f /d /f d   -- place middle corner when u face solved", "[/r d] d2 [f /d]"},
+			//{"[f r]3 u [f r]3 /u  -- cycle corners, 1 corner orbit"},
+			{"[((f r)3 /(r f))3 u]  -- no commutator nesting, inner commutators must use parens to make a list of 2 in commutator"},
 			//{"[f r]2 l /[f r] /l  -- edge cyle, 1 edge orbit"},
-			//{"[((f r) /(r f)) l]  -- edge cyle, 1 edge orbit"},
+			{"[((f r) /(r f)) l]  -- edge cyle, 1 edge orbit"},
 			{""},
 		},
 	}
@@ -550,6 +555,7 @@ func (cube *Cube) Help(useAnsi bool) {
 	fmt.Println()
 	fmt.Printf("turn a face: %s\n", cube.facesString(useAnsi, false))
 	fmt.Printf("turn cube:   %s\n", cube.facesString(useAnsi, true))
+	fmt.Printf("startup test flag: -enablePostTest\n")
 	cube.PrintRed("-----END HELP-----\n", useAnsi)
 }
 
@@ -614,8 +620,9 @@ func (cube *Cube) Parse(input string) (Node, error) {
 			openBracketCount++
 			bracketBalance++
 			if bracketBalance > 1 {
-				return Node{}, fmt.Errorf(
-					"Nested commutators not yet working. Write inner commutators explicitly. [[x y] z] as [((xy)/(yx)) z]",
+				cube.PrintRed(
+					"Nested commutators not yet working. Write inner commutators explicitly. [[fr]3 u] as [((fr)/(rf))3 u]",
+					true,
 				)
 			}
 		case ']':
@@ -736,30 +743,46 @@ func (cube *Cube) Execute(node Node, negates int) (string, error) {
 					reverse(theArr)
 				}
 			} else {
-				// /[r f] = [f r]
-				theArr := node.Arr
-				negCount := negates
-				if node.Negate {
-					// undoing negate and reversing list
-					reverse(theArr)
-					negCount++
+				// using commutator notion of inverse comes second, because, see the notation mess if not?
+				// [fr] = (rf)/(fr) = r f /r /f
+				// [fr][rf] = r f /r /f f r /f /r
+
+				arr1 := node.Arr
+				if negates%2 == 1 {
+					reverse(arr1)
 				}
-				for _, cmd := range theArr {
-					result, err := cube.Execute(cmd, negCount)
-					if err != nil {
-						return outcome, fmt.Errorf("error in %s at %s: %s", outcome, result, err)
+				if negates%2 == 0 {
+					arr := node.Arr
+					for _, cmd := range arr {
+						result, err := cube.Execute(cmd, negates)
+						if err != nil {
+							return outcome, fmt.Errorf("error in %s at %s: %s", outcome, result, err)
+						}
+						outcome += result
 					}
-					outcome += result
-				}
-				for _, cmd := range theArr {
-					result, err := cube.Execute(cmd, negCount+1)
-					if err != nil {
-						return outcome, fmt.Errorf("error in %s at %s: %s", outcome, result, err)
+					for _, cmd := range arr {
+						result, err := cube.Execute(cmd, negates+1)
+						if err != nil {
+							return outcome, fmt.Errorf("error in %s at %s: %s", outcome, result, err)
+						}
+						outcome += result
 					}
-					outcome += result
-				}
-				if node.Negate {
-					reverse(theArr)
+				} else {
+					arr := node.Arr
+					for _, cmd := range arr {
+						result, err := cube.Execute(cmd, negates+1)
+						if err != nil {
+							return outcome, fmt.Errorf("error in %s at %s: %s", outcome, result, err)
+						}
+						outcome += result
+					}
+					for _, cmd := range arr {
+						result, err := cube.Execute(cmd, negates)
+						if err != nil {
+							return outcome, fmt.Errorf("error in %s at %s: %s", outcome, result, err)
+						}
+						outcome += result
+					}
 				}
 			}
 		}
@@ -868,9 +891,13 @@ func (cube *Cube) Loop() {
 	}
 }
 
+var enablePostTest = flag.Bool("enablePostTest", false, "post test on start")
+
 func main() {
+	flag.Parse()
 	cube := NewCube()
-	// accumulate a set of identities and transformations that must work
-	cube.PostTest()
+	if *enablePostTest {
+		cube.PostTest()
+	}
 	cube.Loop()
 }
