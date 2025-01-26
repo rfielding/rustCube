@@ -200,6 +200,8 @@ func NewCube() *Cube {
 			{"/(f r)          -- negate swaps order as well as logical negate list items", "(/r /f)"},
 			{"((f r) /(r f))3 u /((f r) /(r f))3 /u -- cycle corners, nested commutator, 1 corner orbit"},
 			{"((f d) /(d f))2 u /((f d) /(d f))2 /u -- twist corners in place, nested commutator, 1 corner orbit"},
+			{"(((f r) /(r f))3 u) /(u ((f r) /(r f))3)     -- a nested commutator, cycle 3 corners, 1 corner orbit"},
+			{"(((f d) /(d f))3 u) /(u ((f d) /(d f))3)     -- a nested commutator, twist 3 corners, 1 corner orbit"},
 			//{"[f r]3 u [r f]3 /u -- cycle corners, 1 corner orbit"},
 			//{"/r d r d f /d /f d   -- place middle corner when u face solved"}, "[/r d] d2 [f /d]"},
 			//{"[f r]3 u /[f r]3 /u  -- cycle corners, 1 corner orbit"},
