@@ -451,13 +451,20 @@ func (cube *Cube) facesString(useAnsi bool, upperCase bool) string {
 	)
 }
 
+func colorStr(useAnsi bool, color int, s string) string {
+	if !useAnsi {
+		return s
+	}
+	return fmt.Sprintf("\u001b[1;%dm%s\u001b[0m", color, s)
+}
+
 func (cube *Cube) Help(useAnsi bool) {
 	cube.PrintRed("-----BEGIN HELP-----\n", useAnsi)
 	fmt.Printf("run inside rlwrap for better keyboard handling!\n")
 	fmt.Printf("conventions: Up Right Front Down Left Back\n")
 	fmt.Printf("reverse a turn with '/', like: /u\n")
-	fmt.Printf("commutator:  [ur] => ur/u/r\n")
-	fmt.Printf("neg parens:  /(ur) => /u/r\n")
+	fmt.Printf("commutator:  [ur] =>  u r /u /r\n")
+	fmt.Printf("neg parens:  /(u r) => /r /u\n")
 	fmt.Printf("reps:        u2 => uu\n")
 	fmt.Printf("reps:        (ru)2 => ruru\n")
 	fmt.Printf("commutators: ((ru)/(ur))6 => ()\n")
@@ -467,7 +474,7 @@ func (cube *Cube) Help(useAnsi bool) {
 	for i := range cube.EqTest {
 		for j := 0; j < len(cube.EqTest[i]); j++ {
 			if j == 0 {
-				fmt.Printf("\u001b[1;34mexample:\u001b[0m ")
+				fmt.Printf("%s ", colorStr(useAnsi, 34, "example:"))
 			} else {
 				fmt.Printf(" == ")
 			}
@@ -479,8 +486,8 @@ func (cube *Cube) Help(useAnsi bool) {
 		}
 		fmt.Println()
 	}
-	fmt.Printf("\u001b[1;34mexample:\u001b[0m nru         -- start from new cube, then ru\n")
-	fmt.Printf("\u001b[1;34mexample:\u001b[0m n(fdrfdbl)5 -- for a deterministic scramble, you can find in rlwrap history\n")
+	fmt.Printf("%s nru         -- start from new cube, then ru\n", colorStr(useAnsi, 34, "example:"))
+	fmt.Printf("%s n(fdrfdbl)5 -- for a deterministic scramble, you can find in rlwrap history\n", colorStr(useAnsi, 34, "example:"))
 	fmt.Println()
 	fmt.Printf("help: ? or h\n")
 	fmt.Printf("new cube: n\n")
