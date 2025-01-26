@@ -148,8 +148,7 @@ func NewCube() *Cube {
 			{"(f r) /(f r)  -- commutator written explicitly", "f r /r /f", ""},
 			{"[f r] /[f r]  -- commutator divided by itself", "f r /f /r r f /r /f", ""},
 			{"r (u f)2      -- repetition", "r u f u f"},
-			//{"[[f r]2 l]", "[f r]2 l /[f r]2 /l"},  -- bug in commutator that would allow high level commutators
-			//{"/[f r]", "/r /f r f"},
+			{"/[f r]        -- negate a commutator", "r f /r /f"},
 			{"/(f r)        -- negate swaps order as well as logical negate list items", "(/r /f)"},
 			{"/r d r d f /d /f d   -- place middle corner when u face solved", "[/r d] d2 [f /d]"},
 			{"[f r]3 u /[f r]3 /u  -- cycle corners, 1 corner orbit"},
