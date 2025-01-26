@@ -105,7 +105,7 @@ func NewCube() *Cube {
 			{"[f r]3 u /[f r]3 /u"},
 			{"[[f r]3 u]"},
 			{"[f r]2 l /[f r]2 /l"},
-			{"[[f r]2 l]", "[f r]4 l [f r]4 /l"},
+			{"[[f r]2 l]", "[f r]2 l /[f r]2 /l"},
 			{"/(f r)", "(/r /f)"},
 			{"/[f r]", "/r /f r f"},
 			{""},
