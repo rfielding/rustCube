@@ -141,9 +141,10 @@ func NewCube() *Cube {
 		// examples in the expected re-parse format, to pin down language semantics
 		EqTest: [][]string{
 			{"r u           -- trivial move pair"},
-			{"r u f         -- trivial move triple"},
-			{"u u u u       -- identity move does nothing in the end", ""},
-			{"U U U U       -- this just physically spins the cube around to where it started", ""},
+			{"(r f /r /f)6  -- adjacent faces, where commutators have period 6"},
+			{"[r f]6        -- adjacent faces have period 6 "},
+			{"u u u u       -- faces have period 4", ""},
+			{"U U U U       -- cube rotations have period 4", ""},
 			{"(f r) /(f r)  -- commutator written explicitly", "f r /r /f", ""},
 			{"[f r] /[f r]  -- commutator divided by itself", "f r /r /f /f /r r f", ""},
 			{"r (u f)2      -- repetition", "r u f u f"},
@@ -152,7 +153,7 @@ func NewCube() *Cube {
 			{"/(f r)        -- negate swaps order as well as logical negate list items", "(/r /f)"},
 			{"/r d r d f /d /f d   -- place middle corner when u face solved", "[/r d] d2 [f /d]"},
 			{"[f r]3 u /[f r]3 /u  -- cycle corners"},
-			{"[((f r) /(r f))3 u]  -- no commutator nesting, inner commutators must be written with parens"},
+			{"[((f r) /(r f))3 u]  -- no commutator nesting, inner commutators must use parens to make a list of 2 in commutator"},
 			{"[f r]2 l /[f r]2 /l  -- edge cyle"},
 			{""},
 		},
@@ -452,16 +453,16 @@ func (cube *Cube) facesString(useAnsi bool, upperCase bool) string {
 
 func (cube *Cube) Help(useAnsi bool) {
 	cube.PrintRed("-----BEGIN HELP-----\n", useAnsi)
-	fmt.Printf("run with rlwrap for better keyboard handling\n")
+	fmt.Printf("run inside rlwrap for better keyboard handling!\n")
 	fmt.Printf("conventions: Up Right Front Down Left Back\n")
-	fmt.Printf("reverse turn '/', like: /u\n")
-	fmt.Printf("commutator: [ur] => ur/u/r\n")
-	fmt.Printf("neg parens: /(ur) => /u/r\n")
-	fmt.Printf("reps: u2 => uu\n")
-	fmt.Printf("reps: (ru)2 => ruru\n")
+	fmt.Printf("reverse a turn with '/', like: /u\n")
+	fmt.Printf("commutator:  [ur] => ur/u/r\n")
+	fmt.Printf("neg parens:  /(ur) => /u/r\n")
+	fmt.Printf("reps:        u2 => uu\n")
+	fmt.Printf("reps:        (ru)2 => ruru\n")
 	fmt.Printf("commutators: ((ru)/(ur))6 => ()\n")
-	fmt.Printf("identity: (ru)/(ru) => ()\n")
-	fmt.Printf("identity: [rf]/[rf]] => ()\n")
+	fmt.Printf("identity:    (ru)/(ru) => ()\n")
+	fmt.Printf("identity:    [rf]/[rf]] => ()\n")
 	fmt.Println()
 	/*
 		fmt.Printf("example: u r /u /r = [ur] \n")
