@@ -93,7 +93,7 @@ func NewCube() *Cube {
 		},
 		// state of solve
 		Stickers: make(map[string]string),
-		// examples in the expected re-parse format, to pin down correctness of the parser
+		// examples in the expected re-parse format, to pin down language semantics
 		EqTest: [][]string{
 			{"r u"},
 			{"r u f"},
@@ -106,7 +106,8 @@ func NewCube() *Cube {
 			{"[[f r]3 u]"},
 			{"[f r]2 l /[f r]2 /l"},
 			{"[[f r]2 l]", "[f r]4 l [f r]4 /l"},
-			{"/(f r)"},
+			{"/(f r)", "(/r /f)"},
+			{"/[f r]", "/r /f r f"},
 			{""},
 		},
 	}
