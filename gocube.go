@@ -28,6 +28,20 @@ type Cube struct {
 	EqTest     [][]string
 }
 
+type Node struct {
+	Face       string
+	Negate     bool
+	Commutator bool
+	Arr        []Node
+	Repeat     int
+}
+
+func reverse[T any](s []T) {
+	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
+		s[i], s[j] = s[j], s[i]
+	}
+}
+
 /*
 It seems a little strange to do this instead of standard Go test, but
 I will include integration tests if I am to provide internal parameters,
@@ -404,7 +418,7 @@ func (cube *Cube) facesString(useAnsi bool, upperCase bool) string {
 	)
 }
 
-func (cube *Cube) help(useAnsi bool) {
+func (cube *Cube) Help(useAnsi bool) {
 	cube.PrintRed("-----BEGIN HELP-----\n", useAnsi)
 	fmt.Printf("run with rlwrap for better keyboard handling\n")
 	fmt.Printf("conventions: Up Right Front Down Left Back\n")
@@ -435,14 +449,6 @@ func (cube *Cube) help(useAnsi bool) {
 	fmt.Printf("turn a face: %s\n", cube.facesString(useAnsi, false))
 	fmt.Printf("turn cube:   %s\n", cube.facesString(useAnsi, true))
 	cube.PrintRed("-----END HELP-----\n", useAnsi)
-}
-
-type Node struct {
-	Face       string
-	Negate     bool
-	Commutator bool
-	Arr        []Node
-	Repeat     int
 }
 
 func (node Node) Print() string {
@@ -590,12 +596,6 @@ func (cube *Cube) Parse(input string) (Node, error) {
 	return Node{Arr: stack[0]}, nil
 }
 
-func reverse[T any](s []T) {
-	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
-		s[i], s[j] = s[j], s[i]
-	}
-}
-
 func (cube *Cube) Execute(node Node, negates int) {
 	repeat := 1
 	if node.Repeat != 0 {
@@ -673,7 +673,7 @@ func (cube *Cube) Loop() {
 	repeats := 0
 	prevCmd := ""
 	useAnsi := true
-	cube.help(useAnsi)
+	cube.Help(useAnsi)
 
 	for {
 		cube.Draw(cmd, repeats, useAnsi)
@@ -704,7 +704,7 @@ func (cube *Cube) Loop() {
 		}
 
 		if cmd == "?" || cmd == "h" {
-			cube.help(useAnsi)
+			cube.Help(useAnsi)
 			continue
 		}
 
@@ -724,7 +724,7 @@ func (cube *Cube) Loop() {
 		}
 		nodes, err := cube.Parse(cmd)
 		if err != nil {
-			cube.help(useAnsi)
+			cube.Help(useAnsi)
 			msg := fmt.Sprintf("parse error. see help above: %s\n", err)
 			cube.PrintRed(msg, useAnsi)
 			continue
