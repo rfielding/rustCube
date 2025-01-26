@@ -458,13 +458,27 @@ func (cube *Cube) Help(useAnsi bool) {
 	fmt.Printf("identity: (ru)/(ru) => ()\n")
 	fmt.Printf("identity: [rf]/[rf]] => ()\n")
 	fmt.Println()
-	fmt.Printf("example: u r /u /r = [ur] \n")
-	fmt.Printf("example: ((fr)/(rf))3 u ((fr)/(rf))3 /u  -- nested commutator\n")
-	fmt.Printf("example: ((fd)/(df))4 u ((fd)/(df))2 /u  -- nested commutator\n")
-	fmt.Printf("example: ((/rd)/(d/r)) dd ((f/d)/(/df))  -- nested commutator\n")
-	fmt.Printf("example: [f r]3 u [f r]3 /u\n")
-	fmt.Printf("example: [f b]2 u [f b]4 /u\n")
-	fmt.Printf("example: UUUU returns to where it started\n")
+	/*
+		fmt.Printf("example: u r /u /r = [ur] \n")
+		fmt.Printf("example: ((fr)/(rf))3 u ((fr)/(rf))3 /u  -- nested commutator\n")
+		fmt.Printf("example: ((fd)/(df))4 u ((fd)/(df))2 /u  -- nested commutator\n")
+		fmt.Printf("example: ((/rd)/(d/r)) dd ((f/d)/(/df))  -- nested commutator\n")
+		fmt.Printf("example: [f r]3 u [f r]3 /u\n")
+		fmt.Printf("example: [f b]2 u [f b]4 /u\n")
+		fmt.Printf("example: UUUU returns to where it started\n")
+	*/
+	for i := range cube.EqTest {
+		for j := 0; j < len(cube.EqTest[i]); j++ {
+			if j == 0 {
+				fmt.Printf("example: ")
+			} else {
+				fmt.Printf(" == ")
+			}
+			fmt.Printf("%s", cube.EqTest[i][j])
+			fmt.Println()
+		}
+		fmt.Printf("example: %s\n", cube.EqTest[i][0])
+	}
 	fmt.Printf("example: nru => start from new cube, then ru\n")
 	fmt.Printf("example: n(fdrfdbl)5 -- for a deterministic scramble, you can find in rlwrap history\n")
 	fmt.Println()
