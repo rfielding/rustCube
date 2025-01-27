@@ -51,7 +51,7 @@ var EqTest = [][]string{
 	{"[fr]2 [fr]4 -- all adjacent face commuators have period 6", ""},
 	{"[fr]3 [fr]3", ""},
 	{"(fr)/(rf) -- a raw commutator"},
-	{"((fr)/(fr))6 -- period 6", ""},
+	{"((fr)/(fr))6 -- period 6. adjacent face commutators are important!", ""},
 	{"/(u /(r /f))", "/(u f /r)", "r /f /u"},
 	{"/[fd]", "[df]"},
 	{"[[fr]3 u]", "[((f r) /(r f))3 u]"},
