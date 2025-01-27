@@ -65,6 +65,7 @@ var EqTest = [][]string{
 	{"r u /r u r u2 /r -- swap edge pairs while leaving u face in u"},
 	{"[[fr]3 u] -- last layer edge cycle", "[((fr)/(rf))3 u]"},
 	{"[[fd]2 u] -- last layer edge twist", "[fd]2 u /[fd]2 /u"},
+	{"{/r d} [d f] -- edge after u solved "},
 }
 
 func stripComment(s string) string {
