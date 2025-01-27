@@ -893,11 +893,11 @@ func Loop() {
 	prevCmd := ""
 	cube.Help()
 
+	rdr := bufio.NewReader(os.Stdin)
 	for {
 		cube.Draw(cmd, repeats)
 
 		fmt.Printf("\u25B6 ")
-		rdr := bufio.NewReader(os.Stdin)
 		var err error
 		cmd, err = rdr.ReadString('\n')
 		if err != nil {
@@ -922,6 +922,7 @@ func Loop() {
 
 		if cmd == "?" || cmd == "h" || cmd == "help" {
 			cube.Help()
+			rdr.ReadString('\n')
 			continue
 		}
 
