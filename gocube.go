@@ -532,7 +532,7 @@ func (cube *Cube) colorStr(color int, s string) string {
 func (cube *Cube) Help() {
 	cube.PrintRed("-----BEGIN HELP-----\n")
 	fmt.Printf("run inside rlwrap for better keyboard handling!\n")
-	fmt.Printf("from: %s\n", cube.colorStr(32, "https://github.com/rfielding/rustCube"))
+	fmt.Printf("from gocube.go file at: %s\n", cube.colorStr(32, "https://github.com/rfielding/rustCube"))
 	fmt.Printf("conventions: Up Right Front Down Left Back\n")
 	fmt.Printf("reverse a turn with '/', like: /u\n")
 	//fmt.Printf("commutator:  [ur] =>  u r /u /r\n")
