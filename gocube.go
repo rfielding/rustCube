@@ -26,6 +26,7 @@ type Cube struct {
 	Faces      []string
 	Opposite   map[string]string
 	Stickers   map[string]string
+	History    []map[string]string
 }
 
 type Node struct {
@@ -37,7 +38,6 @@ type Node struct {
 }
 
 var UseAnsi = true
-var states []*Cube
 
 // tests happen in an order that finds most primitive bugs that should cause
 // later cases to fail, and teaches user how to think about the algebra
@@ -88,7 +88,7 @@ func (cube *Cube) PostTest() {
 
 	checkExecution := func(parsed Node, theCube *Cube) {
 		fmt.Printf("checkExecution: %s\n", parsed.Print())
-		execution, err := theCube.Execute(parsed, 0)
+		execution, err := theCube.ExecuteCommand(parsed, 0)
 		if err != nil {
 			cube.assert(fmt.Sprintf("execute error on example %s: %s\n", parsed.Print(), err))
 		}
@@ -111,7 +111,7 @@ func (cube *Cube) PostTest() {
 		if err != nil {
 			cube.assert(fmt.Sprintf("parse error on example invertability chech %s: %s\n", s, err))
 		}
-		ex1, err := c1.Execute(node, 0)
+		ex1, err := c1.ExecuteCommand(node, 0)
 		if err != nil {
 			cube.assert(fmt.Sprintf("execute error on example invertability chech %s: %s\n", s, err))
 		}
@@ -551,6 +551,7 @@ func (cube *Cube) Help() {
 	fmt.Println()
 	fmt.Printf("turn a face: %s\n", cube.facesString(false))
 	fmt.Printf("turn cube:   %s\n", cube.facesString(true))
+	fmt.Printf("undo last:   x\n")
 	fmt.Printf("startup test flag: -enablePostTest\n")
 	cube.PrintRed("-----END HELP-----\n")
 }
@@ -702,6 +703,28 @@ func (cube *Cube) Parse(input string) (Node, error) {
 		wasNegated = false
 	}
 	return Node{Arr: stack[0]}, nil
+}
+
+func (cube *Cube) Pop() bool {
+	if len(cube.History) == 0 {
+		return false
+	}
+	// write stickers from history over current stickers
+	for k, v := range cube.History[len(cube.History)-1] {
+		cube.Stickers[k] = v
+	}
+	// remove the last history
+	cube.History = cube.History[:len(cube.History)-1]
+	return true
+}
+
+func (cube *Cube) ExecuteCommand(node Node, negates int) (string, error) {
+	// append a copy of the stickers before this execution
+	cube.History = append(cube.History, make(map[string]string))
+	for k, v := range cube.Stickers {
+		cube.History[len(cube.History)-1][k] = v
+	}
+	return cube.Execute(node, negates)
 }
 
 func (cube *Cube) Execute(node Node, negates int) (string, error) {
@@ -856,13 +879,19 @@ func (cube *Cube) Loop() {
 		}
 		prevCmd = cmd
 
+		if cmd == "x" {
+			didPop := cube.Pop()
+			if !didPop {
+				cube.PrintRed("nothing to undo!\n")
+			}
+			fmt.Printf("stack size: %d\n", len(cube.History))
+			continue
+		}
+
 		if len(cmd) > 0 && cmd[0] == 'n' {
 			cube = NewCube()
 			cmd = cmd[1:]
 		}
-
-		// remember this state, as these states modify the cube
-		states = append(states, cube)
 
 		if cmd == "n" {
 			cube = NewCube()
@@ -879,7 +908,7 @@ func (cube *Cube) Loop() {
 		}
 
 		fmt.Printf("parsed as: %s\n", nodes.Print())
-		flattened, err := cube.Execute(nodes, 0)
+		flattened, err := cube.ExecuteCommand(nodes, 0)
 		if err != nil {
 			cube.Help()
 			msg := fmt.Sprintf("execute error. see help above: %s\n", err)
@@ -897,7 +926,6 @@ var enablePostTest = flag.Bool("enablePostTest", false, "post test on start")
 func main() {
 	flag.Parse()
 	cube := NewCube()
-	states = append(states, cube)
 	if *enablePostTest {
 		cube.PostTest()
 	}
