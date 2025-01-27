@@ -54,10 +54,14 @@ var EqTest = [][]string{
 	{"((fr)/(fr))6 -- period 6. adjacent face commutators are important!", ""},
 	{"/(u /(r /f))", "/(u f /r)", "r /f /u"},
 	{"/[fd]", "[df]"},
-	{"[[fr]3 u]", "[((f r) /(r f))3 u]"},
 	{"[fr]/[fr]", ""},
-	{"[[fd]2u]", "[fd]2 u /[fd]2 /u"},
-	{"[fr][rf]", "[fr] /[fr]", ""},
+	{"[fr][rf]", "[fr]/[fr]", ""},
+	{"[/r d] d2 [f/d] -- after solved u layer, middle edge insert"},
+	{"RR -- after one side solved, flip cube upside down yellow center is u face"},
+	{"f [ur] /f -- get all u edge colors into u"},
+	{"r u /r u r u2 /r -- swap edge pairs while leaving u face in u"},
+	{"[[fr]3 u] -- last layer edge cycle", "[((fr)/(rf))3 u]"},
+	{"[[fd]2 u] -- last layer edge twist", "[fd]2 u /[fd]2 /u"},
 }
 
 func stripComment(s string) string {
