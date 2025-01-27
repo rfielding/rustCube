@@ -803,7 +803,6 @@ func (cube *Cube) Execute(node Node, negates int) (string, error) {
 						outcome += result
 					}
 				} else {
-					fmt.Printf("negative commutator\n")
 					for _, cmd := range fwd {
 						result, err := cube.Execute(cmd, negates+1)
 						if err != nil {
