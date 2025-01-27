@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+var PostTest = flag.Bool("postTest", false, "post test on start")
+
 /*
   This is a Go implementation just so that I can get it done.
   It is very unproductive to use Rust for writing a parser.
@@ -51,22 +53,23 @@ var EqTest = [][]string{
 	{"(fr /f/r)3 (f r /f /r)3", ""},
 	{"[fr]2 [fr]4 -- all adjacent face commuators have period 6", ""},
 	{"[fr]3 [fr]3", ""},
-	{"(fr)/(rf) -- a raw commutator"},
-	{"{fr}      -- a conjugate, wrap r in f.", "f r /f"},
-	{"{f [ru]}  -- orient colors up in u face after bottom 2 layers done", "f [ru] /f"},
+	{"(fr)/(rf)   -- a raw commutator"},
+	{"{fr}        -- a conjugate, wrap r in f.", "f r /f"},
+	{"{fr}/{fr}   -- conjugate identity", ""},
+	{"{f [ru]}    -- orient colors up in u face after bottom 2 layers done", "f [ru] /f"},
 	{"((fr)/(fr))6 -- period 6. adjacent face commutators are important!", ""},
 	{"/(u /(r /f))", "/(u f /r)", "r /f /u"},
 	{"/[fd]", "[df]"},
 	{"[fr]/[fr]", ""},
 	{"[fr][rf]", "[fr]/[fr]", ""},
-	{"[/r d] d2 [f/d] -- after solved u layer, middle edge insert"},
-	{"RR -- after one side solved, flip cube upside down yellow center is u face"},
-	{"f [ur] /f -- get all u edge colors into u"},
+	{"[/r d] d2 [f/d]  -- after solved u layer, middle edge insert"},
+	{"RR               -- after one side solved, flip cube upside down yellow center is u face"},
+	{"f [ur] /f        -- get all u edge colors into u"},
 	{"r u /r u r u2 /r -- swap edge pairs while leaving u face in u"},
-	{"[[fr]3 u] -- last layer edge cycle", "[((fr)/(rf))3 u]"},
-	{"[[fd]2 u] -- last layer edge twist", "[fd]2 u /[fd]2 /u"},
-	{"{/r d} [d f] -- edge after u solved ", "/r d r d f /d /f"},
-	{"{l /d} [/d /f] -- edge after is solved", "l /d /l /d /f d f"},
+	{"[[fr]3 u]        -- last layer edge cycle", "[((fr)/(rf))3 u]"},
+	{"[[fd]2 u]        -- last layer edge twist", "[fd]2 u /[fd]2 /u"},
+	{"{/r d} [d f]     -- edge after u solved ", "/r d r d f /d /f"},
+	{"{l /d} [/d /f]   -- edge after is solved", "l /d /l /d /f d f"},
 }
 
 func stripComment(s string) string {
@@ -82,7 +85,11 @@ func sameMeaning(s string) string {
 }
 
 func (cube *Cube) assert(s string) {
-	cube.PrintRed(s)
+	if *PostTest {
+		panic(s)
+	} else {
+		cube.PrintRed(s)
+	}
 }
 
 /*
@@ -885,9 +892,6 @@ func (cube *Cube) PrintRed(msg string) {
 
 func Loop() {
 	cube := NewCube()
-	if *enablePostTest {
-		cube.PostTest()
-	}
 
 	// loop to get and anlyze a line and draw the screen
 	cmd := ""
@@ -980,9 +984,12 @@ func Loop() {
 	}
 }
 
-var enablePostTest = flag.Bool("enablePostTest", false, "post test on start")
-
 func main() {
 	flag.Parse()
-	Loop()
+	if *PostTest {
+		cube := NewCube()
+		cube.PostTest()
+	} else {
+		Loop()
+	}
 }
