@@ -33,6 +33,7 @@ type Node struct {
 	Face       string
 	Negate     bool
 	Commutator bool
+	Conjugated bool
 	Arr        []Node
 	Repeat     int
 }
@@ -582,7 +583,11 @@ func (node Node) Print() string {
 	}
 	if node.Arr != nil {
 		if node.Commutator {
-			v += "["
+			if node.Conjugated {
+				v += "{"
+			} else {
+				v += "["
+			}
 		} else {
 			v += "("
 		}
@@ -593,7 +598,11 @@ func (node Node) Print() string {
 			v += n.Print()
 		}
 		if node.Commutator {
-			v += "]"
+			if node.Conjugated {
+				v += "}"
+			} else {
+				v += "]"
+			}
 		} else {
 			v += ")"
 		}
@@ -620,6 +629,9 @@ func (cube *Cube) Parse(input string) (Node, error) {
 	openBracketCount := 0
 	closeBracketCount := 0
 	bracketBalance := 0
+	openConjugateCount := 0
+	closeConjugateCount := 0
+	conjugateBalance := 0
 	for i := 0; i < len(input); i++ {
 		char := input[i]
 		switch char {
@@ -641,6 +653,15 @@ func (cube *Cube) Parse(input string) (Node, error) {
 			if bracketBalance < 0 {
 				return Node{}, fmt.Errorf("unbalanced brackets, [, and ]")
 			}
+		case '{':
+			openConjugateCount++
+			conjugateBalance++
+		case '}':
+			closeConjugateCount++
+			conjugateBalance--
+			if conjugateBalance < 0 {
+				return Node{}, fmt.Errorf("unbalanced conjugate, {, and }")
+			}
 		}
 	}
 	if openParenCount != closeParenCount {
@@ -648,6 +669,9 @@ func (cube *Cube) Parse(input string) (Node, error) {
 	}
 	if openBracketCount != closeBracketCount {
 		return Node{}, fmt.Errorf("unbalanced brackets, [, and 	]")
+	}
+	if openConjugateCount != closeConjugateCount {
+		return Node{}, fmt.Errorf("unbalanced conjugate, {, and }")
 	}
 
 	stack := [][]Node{{}}
@@ -658,13 +682,13 @@ func (cube *Cube) Parse(input string) (Node, error) {
 		char := input[i]
 
 		switch char {
-		case '(', '[':
+		case '(', '[', '{':
 			stack = append(
 				stack,
 				[]Node{},
 			)
 			nstack = append(nstack, wasNegated)
-		case ')', ']':
+		case ')', ']', '}':
 			if len(stack) > 1 {
 				negatedParens := nstack[len(nstack)-1]
 				nstack = nstack[:len(nstack)-1]
@@ -675,7 +699,8 @@ func (cube *Cube) Parse(input string) (Node, error) {
 				stack[len(stack)-1] = append(
 					stack[len(stack)-1],
 					Node{
-						Commutator: char == ']',
+						Commutator: char == ']' || char == '}',
+						Conjugated: char == '}',
 						Arr:        last,
 						Negate:     negatedParens,
 						Repeat:     1, // maybe updted
@@ -795,20 +820,26 @@ func (cube *Cube) Execute(node Node, negates int) (string, error) {
 						}
 						outcome += result
 					}
-					for _, cmd := range fwd {
-						result, err := cube.Execute(cmd, negates+1)
-						if err != nil {
-							return outcome, fmt.Errorf("error in %s at %s: %s", outcome, result, err)
+					for i := 0; i < len(fwd); i++ {
+						cmd := fwd[i]
+						if !node.Conjugated || i == 0 {
+							result, err := cube.Execute(cmd, negates+1)
+							if err != nil {
+								return outcome, fmt.Errorf("error in %s at %s: %s", outcome, result, err)
+							}
+							outcome += result
 						}
-						outcome += result
 					}
 				} else {
-					for _, cmd := range fwd {
-						result, err := cube.Execute(cmd, negates+1)
-						if err != nil {
-							return outcome, fmt.Errorf("error in %s at %s: %s", outcome, result, err)
+					for i := 0; i < len(fwd); i++ {
+						cmd := fwd[i]
+						if !node.Conjugated || i != 0 {
+							result, err := cube.Execute(cmd, negates+1)
+							if err != nil {
+								return outcome, fmt.Errorf("error in %s at %s: %s", outcome, result, err)
+							}
+							outcome += result
 						}
-						outcome += result
 					}
 					for _, cmd := range fwd {
 						result, err := cube.Execute(cmd, negates)
