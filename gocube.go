@@ -26,7 +26,6 @@ type Cube struct {
 	Faces      []string
 	Opposite   map[string]string
 	Stickers   map[string]string
-	EqTest     [][]string
 }
 
 type Node struct {
@@ -38,14 +37,23 @@ type Node struct {
 }
 
 var UseAnsi = true
+var states []Cube
 
-/*
-func reverse[T any](s []T) {
-	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
-		s[i], s[j] = s[j], s[i]
-	}
+// tests happen in an order that finds most primitive bugs that should cause
+// later cases to fail, and teaches user how to think about the algebra
+// when looking at examples
+var EqTest = [][]string{
+	{"  -- the empty move does nothing", ""},
+	{"u u u u -- face turn period 4", "u4", "u2 u2", "u u3", ""},
+	{"U U U U -- cube turn period 4", "U4", "U2 U2", "U U3", ""},
+	{"(f r /f /r)6 -- commutator period 6 is important", "[f r]6", ""},
+	{"(f r /f /r)3 (f r /f /r)3", ""},
+	{"[f r]2 [f r]4 -- all adjacent face commuators have period 6", ""},
+	{"[f r]3 [f r]3", ""},
+	{"(f r) /(r f) -- a raw commutator"},
+	{"((f r) /(f r))6 -- period 6", ""},
+	{"/(u /(r /f))", "/(u f /r)", "r /f /u"},
 }
-*/
 
 func stripComment(s string) string {
 	return strings.Trim(strings.Split(s, "-")[0], " ")
@@ -63,7 +71,9 @@ for example to hook up to OpenAI and ask it to solve cubes.
 But any parameters not compiled in would be cause to do a PostTest.
 */
 func (cube *Cube) PostTest() {
+	fmt.Printf("running post test\n")
 	checkInterpretation := func(s string, theCube *Cube) Node {
+		fmt.Printf("checkInterpretation: %s\n", s)
 		expect := "(" + s + ")"
 		parsed, err := theCube.Parse(s)
 		if err != nil {
@@ -77,6 +87,7 @@ func (cube *Cube) PostTest() {
 	}
 
 	checkExecution := func(parsed Node, theCube *Cube) {
+		fmt.Printf("checkExecution: %s\n", parsed.Print())
 		execution, err := theCube.Execute(parsed, 0)
 		if err != nil {
 			cube.assert(fmt.Sprintf("execute error on example %s: %s\n", parsed.Print(), err))
@@ -85,6 +96,7 @@ func (cube *Cube) PostTest() {
 	}
 
 	checkInvertability := func(s string) {
+		fmt.Printf("checkInvertability: %s\n", s)
 		if len(s) < 3 {
 			return
 		}
@@ -126,9 +138,9 @@ func (cube *Cube) PostTest() {
 		}
 	}
 
-	for i := range cube.EqTest {
+	for i := range EqTest {
 		// check the INTERPRETATION after a parse
-		s := stripComment(cube.EqTest[i][0])
+		s := stripComment(EqTest[i][0])
 		checkInvertability(s)
 
 		cube1 := NewCube()
@@ -137,8 +149,8 @@ func (cube *Cube) PostTest() {
 
 		// compare next string cubes to current cube state.
 		// stickers should be the same to pass the test.
-		for j := 1; j < len(cube.EqTest[i]); j++ {
-			s2 := stripComment(cube.EqTest[i][j])
+		for j := 1; j < len(EqTest[i]); j++ {
+			s2 := stripComment(EqTest[i][j])
 			checkInvertability(s2)
 
 			cube2 := NewCube()
@@ -163,6 +175,7 @@ func (cube *Cube) PostTest() {
 			}
 		}
 	}
+	fmt.Printf("post test complete\n")
 }
 
 func NewCube() *Cube {
@@ -191,21 +204,6 @@ func NewCube() *Cube {
 		},
 		// state of solve
 		Stickers: make(map[string]string),
-		// tests happen in an order that finds most primitive bugs that should cause
-		// later cases to fail, and teaches user how to think about the algebra
-		// when looking at examples
-		EqTest: [][]string{
-			{"  -- the empty move does nothing", ""},
-			{"u u u u -- face turn period 4", "u4", "u2 u2", "u u3", ""},
-			{"U U U U -- cube turn period 4", "U4", "U2 U2", "U U3", ""},
-			{"(f r /f /r)6 -- commutator period 6 is important", "[f r]6", ""},
-			{"(f r /f /r)3 (f r /f /r)3", ""},
-			{"[f r]2 [f r]4 -- all adjacent face commuators have period 6", ""},
-			{"[f r]3 [f r]3", ""},
-			{"(f r) /(r f) -- a raw commutator"},
-			{"((f r) /(f r))6 -- period 6", ""},
-			{"/(u /(r /f))", "/(u f /r)", "r /f /u"},
-		},
 	}
 	// i,j,k are strings to located faces
 	// fi finds turn face, fj is an adjacent face to find j and k
@@ -521,14 +519,14 @@ func (cube *Cube) Help() {
 	fmt.Printf("identity:    (ru)/(ru) => ()\n")
 	//fmt.Printf("identity:    [rf]/[rf]] => ()\n")
 	fmt.Println()
-	for i := range cube.EqTest {
-		for j := 0; j < len(cube.EqTest[i]); j++ {
+	for i := range EqTest {
+		for j := 0; j < len(EqTest[i]); j++ {
 			if j == 0 {
 				fmt.Printf("%s ", cube.colorStr(34, "example:"))
 			} else {
 				fmt.Printf(" == ")
 			}
-			v := cube.EqTest[i][j]
+			v := EqTest[i][j]
 			if v == "" {
 				v = "()"
 			}
@@ -542,6 +540,7 @@ func (cube *Cube) Help() {
 	fmt.Printf("help: ? or h\n")
 	fmt.Printf("new cube: n\n")
 	fmt.Printf("toggle ansi colors: a\n")
+	fmt.Print("go back: !\n")
 	fmt.Printf("quit: q\n")
 	fmt.Println()
 	fmt.Printf("turn a face: %s\n", cube.facesString(false))
@@ -827,14 +826,30 @@ func (cube *Cube) Loop() {
 			continue
 		}
 
-		if cmd == "q" {
+		if cmd == "q" || cmd == "quit" || cmd == "exit" {
 			break
 		}
 
 		if cmd == "n" {
 			cube = NewCube()
+
 			repeats = 0
 			continue
+		}
+
+		if cmd == "!" {
+			if len(states) > 0 {
+				// pop idiom
+				cube = &states[len(states)-1]
+				states = states[:len(states)-1]
+				// just forget repeats now
+				repeats = 0
+				fmt.Printf("restored to previous state!\n")
+				continue
+			} else {
+				fmt.Printf("no previous state to restore!\n")
+				continue
+			}
 		}
 
 		if cmd == "test" {
@@ -842,7 +857,7 @@ func (cube *Cube) Loop() {
 			continue
 		}
 
-		if cmd == "?" || cmd == "h" {
+		if cmd == "?" || cmd == "h" || cmd == "help" {
 			cube.Help()
 			continue
 		}
@@ -856,6 +871,9 @@ func (cube *Cube) Loop() {
 			repeats = 1
 		}
 		prevCmd = cmd
+
+		// we are about to modify cubes. save this on the stack
+		states = append(states, *cube)
 
 		if len(cmd) > 0 && cmd[0] == 'n' {
 			cube = NewCube()
