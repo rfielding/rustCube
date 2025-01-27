@@ -37,7 +37,7 @@ type Node struct {
 }
 
 var UseAnsi = true
-var states []Cube
+var states []*Cube
 
 // tests happen in an order that finds most primitive bugs that should cause
 // later cases to fail, and teaches user how to think about the algebra
@@ -158,6 +158,11 @@ func (cube *Cube) PostTest() {
 			checkExecution(parsed2, cube2)
 
 			// compare stickers to make sure they are equivalent as a parse
+			to := s2
+			if to == "" {
+				to = "()"
+			}
+			fmt.Printf("checkEquality: %s == %s\n", s, to)
 			for k := range cube1.Stickers {
 				got := cube1.Stickers[k]
 				expected := cube2.Stickers[k]
@@ -175,7 +180,7 @@ func (cube *Cube) PostTest() {
 			}
 		}
 	}
-	fmt.Printf("post test complete\n")
+	fmt.Printf("post test complete\n\n")
 }
 
 func NewCube() *Cube {
@@ -540,6 +545,7 @@ func (cube *Cube) Help() {
 	fmt.Printf("help: ? or h\n")
 	fmt.Printf("new cube: n\n")
 	fmt.Printf("toggle ansi colors: a\n")
+	fmt.Printf("test: run tests on expressions\n")
 	fmt.Print("go back: !\n")
 	fmt.Printf("quit: q\n")
 	fmt.Println()
@@ -830,28 +836,6 @@ func (cube *Cube) Loop() {
 			break
 		}
 
-		if cmd == "n" {
-			cube = NewCube()
-
-			repeats = 0
-			continue
-		}
-
-		if cmd == "!" {
-			if len(states) > 0 {
-				// pop idiom
-				cube = &states[len(states)-1]
-				states = states[:len(states)-1]
-				// just forget repeats now
-				repeats = 0
-				fmt.Printf("restored to previous state!\n")
-				continue
-			} else {
-				fmt.Printf("no previous state to restore!\n")
-				continue
-			}
-		}
-
 		if cmd == "test" {
 			cube.PostTest()
 			continue
@@ -872,13 +856,20 @@ func (cube *Cube) Loop() {
 		}
 		prevCmd = cmd
 
-		// we are about to modify cubes. save this on the stack
-		states = append(states, *cube)
-
 		if len(cmd) > 0 && cmd[0] == 'n' {
 			cube = NewCube()
 			cmd = cmd[1:]
 		}
+
+		// remember this state, as these states modify the cube
+		states = append(states, cube)
+
+		if cmd == "n" {
+			cube = NewCube()
+			repeats = 0
+			continue
+		}
+
 		nodes, err := cube.Parse(cmd)
 		if err != nil {
 			cube.Help()
@@ -906,6 +897,7 @@ var enablePostTest = flag.Bool("enablePostTest", false, "post test on start")
 func main() {
 	flag.Parse()
 	cube := NewCube()
+	states = append(states, cube)
 	if *enablePostTest {
 		cube.PostTest()
 	}
