@@ -53,6 +53,10 @@ var EqTest = [][]string{
 	{"(f r) /(r f) -- a raw commutator"},
 	{"((f r) /(f r))6 -- period 6", ""},
 	{"/(u /(r /f))", "/(u f /r)", "r /f /u"},
+	{"/[f d]", "[d f]"},
+	{"[[f r]3 u]", "[((f r) /(r f))3 u]"},
+	{"[f r] /[f r]", ""},
+	//{"[[f d]2 u]", "[f d]2 u /[f d]2 /u", ""},
 }
 
 func stripComment(s string) string {
@@ -784,15 +788,15 @@ func (cube *Cube) Execute(node Node, negates int) (string, error) {
 						outcome += result
 					}
 				} else {
-					arr := node.Arr
-					for _, cmd := range arr {
+					fmt.Printf("negative commutator\n")
+					for _, cmd := range fwd {
 						result, err := cube.Execute(cmd, negates+1)
 						if err != nil {
 							return outcome, fmt.Errorf("error in %s at %s: %s", outcome, result, err)
 						}
 						outcome += result
 					}
-					for _, cmd := range arr {
+					for _, cmd := range fwd {
 						result, err := cube.Execute(cmd, negates)
 						if err != nil {
 							return outcome, fmt.Errorf("error in %s at %s: %s", outcome, result, err)
