@@ -37,6 +37,8 @@ type Node struct {
 	Repeat     int
 }
 
+var UseAnsi = true
+
 /*
 func reverse[T any](s []T) {
 	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
@@ -47,6 +49,10 @@ func reverse[T any](s []T) {
 
 func stripComment(s string) string {
 	return strings.Trim(strings.Split(s, "-")[0], " ")
+}
+
+func (cube *Cube) assert(s string) {
+	cube.PrintRed(s)
 }
 
 /*
@@ -61,11 +67,11 @@ func (cube *Cube) PostTest() {
 		expect := "(" + s + ")"
 		parsed, err := theCube.Parse(s)
 		if err != nil {
-			panic(fmt.Sprintf("parse error on example %s: %s\n", s, err))
+			cube.assert(fmt.Sprintf("parse error on example %s: %s\n", s, err))
 		}
 		got := parsed.Print()
 		if expect != got {
-			panic(fmt.Sprintf("expect interpretation of %s to be: %s\n", expect, got))
+			cube.assert(fmt.Sprintf("expect interpretation of %s to be: %s\n", expect, got))
 		}
 		return parsed
 	}
@@ -73,7 +79,7 @@ func (cube *Cube) PostTest() {
 	checkExecution := func(parsed Node, theCube *Cube) {
 		execution, err := theCube.Execute(parsed, 0)
 		if err != nil {
-			panic(fmt.Sprintf("execute error on example %s: %s\n", parsed.Print(), err))
+			cube.assert(fmt.Sprintf("execute error on example %s: %s\n", parsed.Print(), err))
 		}
 		_ = execution
 	}
@@ -91,23 +97,23 @@ func (cube *Cube) PostTest() {
 		c1 := NewCube()
 		node, err := c1.Parse(s)
 		if err != nil {
-			panic(fmt.Sprintf("parse error on example invertability chech %s: %s\n", s, err))
+			cube.assert(fmt.Sprintf("parse error on example invertability chech %s: %s\n", s, err))
 		}
 		ex1, err := c1.Execute(node, 0)
 		if err != nil {
-			panic(fmt.Sprintf("execute error on example invertability chech %s: %s\n", s, err))
+			cube.assert(fmt.Sprintf("execute error on example invertability chech %s: %s\n", s, err))
 		}
 		node, err = c1.Parse(sNot)
 		if err != nil {
-			panic(fmt.Sprintf("parse error on example invertability chech %s: %s\n", sNot, err))
+			cube.assert(fmt.Sprintf("parse error on example invertability chech %s: %s\n", sNot, err))
 		}
 		ex2, err := c1.Execute(node, 0)
 		if err != nil {
-			panic(fmt.Sprintf("execute error on example invertability chech %s: %s\n", sNot, err))
+			cube.assert(fmt.Sprintf("execute error on example invertability chech %s: %s\n", sNot, err))
 		}
 		for k, v := range c1.Stickers {
 			if string(k[0]) != v {
-				panic(
+				cube.assert(
 					fmt.Sprintf(
 						"inverse check: %s not inverted by %s.\nfwd: %s\nrev: %s\n",
 						s,
@@ -144,7 +150,7 @@ func (cube *Cube) PostTest() {
 				got := cube1.Stickers[k]
 				expected := cube2.Stickers[k]
 				if got != expected {
-					panic(
+					cube.assert(
 						fmt.Sprintf(
 							"stickers should be the same in %s: sticker %s got %s instead of %s\n",
 							s,
@@ -185,26 +191,20 @@ func NewCube() *Cube {
 		},
 		// state of solve
 		Stickers: make(map[string]string),
-		// examples in the expected re-parse format, to pin down language semantics
-		// commented out items are TODO to get working, failing invertability checks
-		// they all involve negated commutators
+		// tests happen in an order that finds most primitive bugs that should cause
+		// later cases to fail, and teaches user how to think about the algebra
+		// when looking at examples
 		EqTest: [][]string{
-			{"r u             -- trivial move pair"},
-			{"(r f /r /f)6    -- adjacent faces, where commutators have period 6"},
-			{"u u u u         -- faces have period 4", ""},
-			{"U U U U         -- cube rotations have period 4", ""},
-			{"((f r) /(r f))   -- commutators, extract non-commutative part of 2 objects"},
-			{"(f r) /(r f)    -- commutator written explicitly", "f r /f /r"},
-			{"r (u f)2        -- repetition", "r u f u f"},
-			{"/(/(b d))       -- nested parens", "b d"},
-			{"/(d /(b d /r))  -- nested parens", "b d /r /d"},
-			{"/(f r)          -- negate swaps order as well as logical negate list items", "(/r /f)"},
-			{"((f r) /(r f))3 u /((f r) /(r f))3 /u -- cycle corners, nested commutator, 1 corner orbit"},
-			{"((f d) /(d f))2 u /((f d) /(d f))2 /u -- twist corners in place, nested commutator, 1 corner orbit"},
-			{"/r d r d f /d /f d   -- place middle corner when u face solved", "[/r d] d2 [f /d]"},
-			{"[((f r)3 /(r f))3 u]  -- no commutator nesting, inner commutators must use parens to make a list of 2 in commutator"},
-			{"[((f d)3 /(d r))3 u]  -- twist corners. "},
-			{""},
+			{"  -- the empty move does nothing", ""},
+			{"u u u u -- face turn period 4", "u4", "u2 u2", "u u3", ""},
+			{"U U U U -- cube turn period 4", "U4", "U2 U2", "U U3", ""},
+			{"(f r /f /r)6 -- commutator period 6 is important", "[f r]6", ""},
+			{"(f r /f /r)3 (f r /f /r)3", ""},
+			{"[f r]2 [f r]4 -- all adjacent face commuators have period 6", ""},
+			{"[f r]3 [f r]3", ""},
+			{"(f r) /(r f) -- a raw commutator"},
+			{"((f r) /(f r))6 -- period 6", ""},
+			{"/(u /(r /f))", "r /f u"},
 		},
 	}
 	// i,j,k are strings to located faces
@@ -241,7 +241,7 @@ func NewCube() *Cube {
 }
 
 // stdio side-effect
-func (cube *Cube) Draw(cmd string, repeats int, useAnsi bool) {
+func (cube *Cube) Draw(cmd string, repeats int) {
 	fullMask := "%s  %s%s%s  %s%s%s  %s%s%s  %s\n"
 	edgeMask := "            %s%s%s            \n"
 
@@ -252,7 +252,7 @@ func (cube *Cube) Draw(cmd string, repeats int, useAnsi bool) {
 		}
 		// fg colors: 30 black, 31 red, 32 green, 33 yellow, 34 blue, 35 magenta, 36 cyan, 37 white
 		// bg colors: 40 black, 41 red, 42 green, 43 yellow, 44 blue, 45 magenta, 46 cyan, 47 white
-		if useAnsi {
+		if UseAnsi {
 			switch v {
 			case "u":
 				v = fmt.Sprintf("\u001b[1;47;30m  \u001b[0m")
@@ -468,8 +468,8 @@ func (cube *Cube) shouldTurnCube(f string) bool {
 	return false
 }
 
-func (cube *Cube) facesString(useAnsi bool, upperCase bool) string {
-	if !useAnsi {
+func (cube *Cube) facesString(upperCase bool) string {
+	if !UseAnsi {
 		return " U  R  F  D  L  B"
 	}
 	ansiColors := map[string]string{
@@ -500,17 +500,17 @@ func (cube *Cube) facesString(useAnsi bool, upperCase bool) string {
 	)
 }
 
-func (cube *Cube) colorStr(useAnsi bool, color int, s string) string {
-	if !useAnsi {
+func (cube *Cube) colorStr(color int, s string) string {
+	if !UseAnsi {
 		return s
 	}
 	return fmt.Sprintf("\u001b[1;%dm%s\u001b[0m", color, s)
 }
 
-func (cube *Cube) Help(useAnsi bool) {
-	cube.PrintRed("-----BEGIN HELP-----\n", useAnsi)
+func (cube *Cube) Help() {
+	cube.PrintRed("-----BEGIN HELP-----\n")
 	fmt.Printf("run inside rlwrap for better keyboard handling!\n")
-	fmt.Printf("from: %s\n", cube.colorStr(useAnsi, 32, "https://github.com/rfielding/rustCube"))
+	fmt.Printf("from: %s\n", cube.colorStr(32, "https://github.com/rfielding/rustCube"))
 	fmt.Printf("conventions: Up Right Front Down Left Back\n")
 	fmt.Printf("reverse a turn with '/', like: /u\n")
 	//fmt.Printf("commutator:  [ur] =>  u r /u /r\n")
@@ -524,7 +524,7 @@ func (cube *Cube) Help(useAnsi bool) {
 	for i := range cube.EqTest {
 		for j := 0; j < len(cube.EqTest[i]); j++ {
 			if j == 0 {
-				fmt.Printf("%s ", cube.colorStr(useAnsi, 34, "example:"))
+				fmt.Printf("%s ", cube.colorStr(34, "example:"))
 			} else {
 				fmt.Printf(" == ")
 			}
@@ -536,18 +536,18 @@ func (cube *Cube) Help(useAnsi bool) {
 		}
 		fmt.Println()
 	}
-	fmt.Printf("%s nru         -- start from new cube, then ru\n", cube.colorStr(useAnsi, 34, "example:"))
-	fmt.Printf("%s n(fdrfdbl)5 -- for a deterministic scramble, you can find in rlwrap history\n", cube.colorStr(useAnsi, 34, "example:"))
+	fmt.Printf("%s nru         -- start from new cube, then ru\n", cube.colorStr(34, "example:"))
+	fmt.Printf("%s n(fdrfdbl)5 -- for a deterministic scramble, you can find in rlwrap history\n", cube.colorStr(34, "example:"))
 	fmt.Println()
 	fmt.Printf("help: ? or h\n")
 	fmt.Printf("new cube: n\n")
 	fmt.Printf("toggle ansi colors: a\n")
 	fmt.Printf("quit: q\n")
 	fmt.Println()
-	fmt.Printf("turn a face: %s\n", cube.facesString(useAnsi, false))
-	fmt.Printf("turn cube:   %s\n", cube.facesString(useAnsi, true))
+	fmt.Printf("turn a face: %s\n", cube.facesString(false))
+	fmt.Printf("turn cube:   %s\n", cube.facesString(true))
 	fmt.Printf("startup test flag: -enablePostTest\n")
-	cube.PrintRed("-----END HELP-----\n", useAnsi)
+	cube.PrintRed("-----END HELP-----\n")
 }
 
 func (node Node) Print() string {
@@ -702,24 +702,26 @@ func (cube *Cube) Parse(input string) (Node, error) {
 func (cube *Cube) Execute(node Node, negates int) (string, error) {
 	outcome := ""
 	repeat := 1
+	// globally track repeats we are under
 	if node.Repeat != 0 {
 		repeat = node.Repeat
 	}
+	// globally track the number of negates we are under
 	if node.Negate {
 		negates++
 	}
 	if node.Arr != nil {
-
-		fwd := make([]Node, 0)
-		rev := make([]Node, 0)
-		for i := 0; i < len(node.Arr); i++ {
-			fwd = append(fwd, node.Arr[i])
-			rev = append(rev, node.Arr[len(node.Arr)-1-i])
-		}
-
 		// interpret as repeats bind latest
 		for i := 0; i < repeat; i++ {
+			// we swap these pointers around on each iteration, make sure it's all not-touched on iteration
+			fwd := make([]Node, 0)
+			rev := make([]Node, 0)
+			for i := 0; i < len(node.Arr); i++ {
+				fwd = append(fwd, node.Arr[i])
+				rev = append(rev, node.Arr[len(node.Arr)-1-i])
+			}
 			if !node.Commutator {
+				// when reversed, we walkk parenthesis backwards
 				reversed := negates%2 == 1
 				if reversed {
 					fwd, rev = rev, fwd
@@ -792,8 +794,8 @@ func (cube *Cube) Execute(node Node, negates int) (string, error) {
 }
 
 // print a message in red if ansi
-func (cube *Cube) PrintRed(msg string, useAnsi bool) {
-	if useAnsi {
+func (cube *Cube) PrintRed(msg string) {
+	if UseAnsi {
 		fmt.Printf("\u001b[1;31m%s\u001b[0m\n", msg)
 	} else {
 		fmt.Printf("%s\n", msg)
@@ -805,11 +807,10 @@ func (cube *Cube) Loop() {
 	cmd := ""
 	repeats := 0
 	prevCmd := ""
-	useAnsi := true
-	cube.Help(useAnsi)
+	cube.Help()
 
 	for {
-		cube.Draw(cmd, repeats, useAnsi)
+		cube.Draw(cmd, repeats)
 
 		fmt.Printf("\u25B6 ")
 		rdr := bufio.NewReader(os.Stdin)
@@ -822,7 +823,7 @@ func (cube *Cube) Loop() {
 		cmd = strings.TrimSpace(cmd)
 
 		if cmd == "a" {
-			useAnsi = !useAnsi
+			UseAnsi = !UseAnsi
 			continue
 		}
 
@@ -836,8 +837,13 @@ func (cube *Cube) Loop() {
 			continue
 		}
 
+		if cmd == "test" {
+			cube.PostTest()
+			continue
+		}
+
 		if cmd == "?" || cmd == "h" {
-			cube.Help(useAnsi)
+			cube.Help()
 			continue
 		}
 
@@ -857,18 +863,18 @@ func (cube *Cube) Loop() {
 		}
 		nodes, err := cube.Parse(cmd)
 		if err != nil {
-			cube.Help(useAnsi)
+			cube.Help()
 			msg := fmt.Sprintf("parse error. see help above: %s\n", err)
-			cube.PrintRed(msg, useAnsi)
+			cube.PrintRed(msg)
 			continue
 		}
 
 		fmt.Printf("parsed as: %s\n", nodes.Print())
 		flattened, err := cube.Execute(nodes, 0)
 		if err != nil {
-			cube.Help(useAnsi)
+			cube.Help()
 			msg := fmt.Sprintf("execute error. see help above: %s\n", err)
-			cube.PrintRed(msg, useAnsi)
+			cube.PrintRed(msg)
 			continue
 		}
 		fmt.Printf("executed moves: %s\n", flattened)
