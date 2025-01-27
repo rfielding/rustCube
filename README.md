@@ -1,13 +1,27 @@
 rustcube
 ========
 
-This includes a polished Go implementation, and a Rust implementation.
+This includes a polished Go implementation, and a much simpler Rust implementation.
 
 ![ui.png](ui.png)
 
 The language has support for basic group theory.
 Most moves are made of nested commutators,
-and "semi-commutators". 
+and conjugates.  ie:
+
+- f/f = (fr)/(fr) = \[fr\]/\[fr\] = {fr}/{fr} = ()
+- /\[fr\] = \[rf\]
+- /{fr} = {rf}
+- /(fr) = /r /f
+- (rf)2 = (rf)(rf)
+- {rf}2 = {rf}{rf}
+- \[rf\]\[rf\] = \[rf\]\[rf\]
+- \[fr\] = f r /f r -- commutator, which measures commutativity
+- {fr} = f r /f r -- conjugate, which nests r inside of f
+- Example: {f \[ru\]} = f r u /r /u /f
+- Example: \[\[fr\]3 u\] = f r /f /r  f r /f /r  f r /f /r  u  r f /r /f  r f /r /f  r f /r /f  /u
+- Example: \[\[fd\]3 u\]
+
 
 
 
