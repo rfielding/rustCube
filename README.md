@@ -1,6 +1,17 @@
 rustcube
 ========
 
+This includes a polished Go implementation, and a Rust implementation.
+
+![ui.png](ui.png)
+
+The language has support for basic group theory.
+Most moves are made of nested commutators,
+and "semi-commutators". 
+
+
+
+
 ![remarkable.png](remarkable.png)
 
 A command-line tool for Rubiks Cube calculations.
