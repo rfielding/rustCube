@@ -849,7 +849,12 @@ func (cube *Cube) PrintRed(msg string) {
 	}
 }
 
-func (cube *Cube) Loop() {
+func Loop() {
+	cube := NewCube()
+	if *enablePostTest {
+		cube.PostTest()
+	}
+
 	// loop to get and anlyze a line and draw the screen
 	cmd := ""
 	repeats := 0
@@ -944,9 +949,5 @@ var enablePostTest = flag.Bool("enablePostTest", false, "post test on start")
 
 func main() {
 	flag.Parse()
-	cube := NewCube()
-	if *enablePostTest {
-		cube.PostTest()
-	}
-	cube.Loop()
+	Loop()
 }
