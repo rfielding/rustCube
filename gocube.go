@@ -204,7 +204,7 @@ func NewCube() *Cube {
 			{"[f r]3 [f r]3", ""},
 			{"(f r) /(r f) -- a raw commutator"},
 			{"((f r) /(f r))6 -- period 6", ""},
-			{"/(u /(r /f))", "r /f u"},
+			{"/(u /(r /f))", "/(u f /r)", "r /f /u"},
 		},
 	}
 	// i,j,k are strings to located faces
