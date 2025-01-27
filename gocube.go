@@ -46,7 +46,6 @@ var UseAnsi = true
 // later cases to fail, and teaches user how to think about the algebra
 // when looking at examples
 var EqTest = [][]string{
-	{"  -- the empty move does nothing", ""},
 	{"uuuu -- face turn period 4", "u4", "u2 u2", "u u3", ""},
 	{"UUUU -- cube turn period 4", "U4", "U2 U2", "U U3", ""},
 	{"(fr /f/r)6 -- commutator period 6 is important", "[f r]6", ""},
@@ -544,17 +543,14 @@ func (cube *Cube) colorStr(color int, s string) string {
 
 func (cube *Cube) Help() {
 	cube.PrintRed("-----BEGIN HELP-----\n")
-	fmt.Printf("run inside rlwrap for better keyboard handling!\n")
+	fmt.Printf("run inside rlwrap for better keyboard handling! ctrl-r to search commands.\n")
 	fmt.Printf("from gocube.go file at: %s\n", cube.colorStr(32, "https://github.com/rfielding/rustCube"))
 	fmt.Printf("conventions: Up Right Front Down Left Back\n")
 	fmt.Printf("reverse a turn with '/', like: /u\n")
-	//fmt.Printf("commutator:  [ur] =>  u r /u /r\n")
-	fmt.Printf("neg parens:  /(u r) => /r /u\n")
-	fmt.Printf("reps:        u2 => uu\n")
-	fmt.Printf("reps:        (ru)2 => ruru\n")
-	fmt.Printf("commutators: ((ru)/(ur))6 => ()\n")
-	fmt.Printf("identity:    (ru)/(ru) => ()\n")
-	//fmt.Printf("identity:    [rf]/[rf]] => ()\n")
+	fmt.Printf("commutators have period 6: ((ru)/(ur))6 => ()\n")
+	fmt.Printf("negate: /(rf) = /f /r\n")
+	fmt.Printf("commutator: [fr] => f r /f /r\n")
+	fmt.Printf("conjugate: {ru} => r u /r\n")
 	fmt.Println()
 	for i := range EqTest {
 		for j := 0; j < len(EqTest[i]); j++ {
