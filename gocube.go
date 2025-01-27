@@ -69,7 +69,8 @@ var EqTest = [][]string{
 	{"[[fr]3 u]        -- last layer edge cycle", "[((fr)/(rf))3 u]"},
 	{"[[fd]2 u]        -- last layer edge twist", "[fd]2 u /[fd]2 /u"},
 	{"{/r d} [d f]     -- edge after u solved ", "/r d r d f /d /f"},
-	{"{l /d} [/d /f]   -- edge after is solved", "l /d /l /d /f d f"},
+	{"{l /d} [/d /f]   -- edge after u is solved", "l /d /l /d /f d f"},
+	{"{f {ru}}         -- turn u inside [fr] center"},
 }
 
 func stripComment(s string) string {
