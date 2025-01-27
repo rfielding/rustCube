@@ -56,7 +56,8 @@ var EqTest = [][]string{
 	{"/[f d]", "[d f]"},
 	{"[[f r]3 u]", "[((f r) /(r f))3 u]"},
 	{"[f r] /[f r]", ""},
-	//{"[[f d]2 u]", "[f d]2 u /[f d]2 /u", ""},
+	{"[[f d]2 u]", "[f d]2 u /[f d]2 /u"},
+	{"[f r][r f]", "[f r] /[f r]", ""},
 }
 
 func stripComment(s string) string {
