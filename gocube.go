@@ -44,24 +44,32 @@ var UseAnsi = true
 // when looking at examples
 var EqTest = [][]string{
 	{"  -- the empty move does nothing", ""},
-	{"u u u u -- face turn period 4", "u4", "u2 u2", "u u3", ""},
-	{"U U U U -- cube turn period 4", "U4", "U2 U2", "U U3", ""},
-	{"(f r /f /r)6 -- commutator period 6 is important", "[f r]6", ""},
-	{"(f r /f /r)3 (f r /f /r)3", ""},
-	{"[f r]2 [f r]4 -- all adjacent face commuators have period 6", ""},
-	{"[f r]3 [f r]3", ""},
-	{"(f r) /(r f) -- a raw commutator"},
-	{"((f r) /(f r))6 -- period 6", ""},
+	{"uuuu -- face turn period 4", "u4", "u2 u2", "u u3", ""},
+	{"UUUU -- cube turn period 4", "U4", "U2 U2", "U U3", ""},
+	{"(fr /f/r)6 -- commutator period 6 is important", "[f r]6", ""},
+	{"(fr /f/r)3 (f r /f /r)3", ""},
+	{"[fr]2 [fr]4 -- all adjacent face commuators have period 6", ""},
+	{"[fr]3 [fr]3", ""},
+	{"(fr)/(rf) -- a raw commutator"},
+	{"((fr)/(fr))6 -- period 6", ""},
 	{"/(u /(r /f))", "/(u f /r)", "r /f /u"},
-	{"/[f d]", "[d f]"},
-	{"[[f r]3 u]", "[((f r) /(r f))3 u]"},
-	{"[f r] /[f r]", ""},
-	{"[[f d]2 u]", "[f d]2 u /[f d]2 /u"},
-	{"[f r][r f]", "[f r] /[f r]", ""},
+	{"/[fd]", "[df]"},
+	{"[[fr]3 u]", "[((f r) /(r f))3 u]"},
+	{"[fr]/[fr]", ""},
+	{"[[fd]2u]", "[fd]2 u /[fd]2 /u"},
+	{"[fr][rf]", "[fr] /[fr]", ""},
 }
 
 func stripComment(s string) string {
 	return strings.Trim(strings.Split(s, "-")[0], " ")
+}
+
+func sameMeaning(s string) string {
+	// strip spaces after stripped comments
+	s = stripComment(s)
+	// strip spaces
+	s = strings.Replace(s, " ", "", -1)
+	return s
 }
 
 func (cube *Cube) assert(s string) {
@@ -85,6 +93,8 @@ func (cube *Cube) PostTest() {
 			cube.assert(fmt.Sprintf("parse error on example %s: %s\n", s, err))
 		}
 		got := parsed.Print()
+		got = sameMeaning(got)
+		expect = sameMeaning(expect)
 		if expect != got {
 			cube.assert(fmt.Sprintf("expect interpretation of %s to be: %s\n", expect, got))
 		}
