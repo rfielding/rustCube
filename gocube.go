@@ -717,8 +717,8 @@ func (cube *Cube) Parse(input string) (Node, error) {
 				)
 			}
 		case '/':
-			// use it to set negate on next token
-			wasNegated = true
+			// use it to set negate on next token. literal // is ignored.
+			wasNegated = !wasNegated
 			continue
 		case 'U', 'R', 'F', 'D', 'L', 'B', 'u', 'r', 'f', 'd', 'l', 'b':
 			face := char
