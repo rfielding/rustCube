@@ -38,6 +38,9 @@ type Node struct {
 	Conjugated bool
 	Arr        []Node
 	Repeat     int
+	Xnegates   int
+	Ynegates   int
+	Znegates   int
 }
 
 var UseAnsi = true
@@ -70,7 +73,7 @@ var EqTest = [][]string{
 	{"{/r d} [d f]     -- edge after u solved ", "/r d r d f /d /f"},
 	{"{l /d} [/d /f]   -- edge after u is solved", "l /d /l /d /f d f"},
 	{"{f {ru}}         -- turn u inside [fr] center"},
-	//{"@R{l/d}[/d/f]    -- mirror image a move accros axis R. negate all faces and swap f-b,l-r,u~d. to reuse moves.", "{/rd}[df]", "@L{l/d}[/d/f]"},
+	//{"x{l/d}[/d/f]   -- mirror image a move accros axis R. negate all faces and swap f-b,l-r,u~d. to reuse moves.", "{/rd}[df]", "x{l/d}[/d/f]"},
 }
 
 func stripComment(s string) string {
@@ -691,6 +694,16 @@ func (cube *Cube) Parse(input string) (Node, error) {
 		char := input[i]
 
 		switch char {
+		case 'x', 'y', 'z':
+			/*
+				Reflection across x lets us map a move to any orientation and location.
+				{l\d}[/d\f] becomes {/rd}[df] when reflected across x, and it might also
+				be nested in moves like: {R {F (x{l\d}[/d\f]) }}.
+				This would dramatically reduce the number of named moves, but
+				won't really make sequences shorter. It would be useful for
+				equivalence checks.
+			*/
+			return Node{}, fmt.Errorf("reflections will reserve x,y,z for later use")
 		case '(', '[', '{':
 			stack = append(
 				stack,
