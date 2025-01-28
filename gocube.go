@@ -70,6 +70,7 @@ var EqTest = [][]string{
 	{"{/r d} [d f]     -- edge after u solved ", "/r d r d f /d /f"},
 	{"{l /d} [/d /f]   -- edge after u is solved", "l /d /l /d /f d f"},
 	{"{f {ru}}         -- turn u inside [fr] center"},
+	//{"@R{l/d}[/d/f]    -- mirror image a move accros axis R. negate all faces and swap f-b,l-r,u~d. to reuse moves.", "{/rd}[df]", "@L{l/d}[/d/f]"},
 }
 
 func stripComment(s string) string {
@@ -551,6 +552,7 @@ func (cube *Cube) Help() {
 	fmt.Printf("negate: /(rf) = /f /r\n")
 	fmt.Printf("commutator: [fr] => f r /f /r\n")
 	fmt.Printf("conjugate: {ru} => r u /r\n")
+	fmt.Printf("mirror across an axis: negate all faces and swap names on axis. ex: x[[fr]3u]=[[/f/l]3/u] \n")
 	fmt.Println()
 	for i := range EqTest {
 		for j := 0; j < len(EqTest[i]); j++ {
@@ -574,13 +576,12 @@ func (cube *Cube) Help() {
 	fmt.Printf("new cube: n\n")
 	fmt.Printf("toggle ansi colors: a\n")
 	fmt.Printf("test: run tests on expressions\n")
-	fmt.Print("go back: !\n")
 	fmt.Printf("quit: q\n")
 	fmt.Println()
 	fmt.Printf("turn a face: %s\n", cube.facesString(false))
 	fmt.Printf("turn cube:   %s\n", cube.facesString(true))
-	fmt.Printf("undo last:   x\n")
-	fmt.Printf("startup test flag: -enablePostTest\n")
+	fmt.Printf("pop move off history (undo):   x\n")
+	fmt.Printf("startup test flag: -postTest\n")
 	cube.PrintRed("-----END HELP-----\n")
 }
 
@@ -939,7 +940,7 @@ func Loop() {
 		}
 		prevCmd = cmd
 
-		if cmd == "x" {
+		if cmd == "p" {
 			didPop := cube.Pop()
 			if !didPop {
 				cube.PrintRed("nothing to undo!\n")

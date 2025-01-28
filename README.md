@@ -22,7 +22,14 @@ and conjugates.  ie:
 - Example: \[\[fr\]3 u\] = f r /f /r  f r /f /r  f r /f /r  u  r f /r /f  r f /r /f  r f /r /f  /u
 - Example: \[\[fd\]3 u\]
 
+To transform a move, mentally, negate each face by name. And the axis of reflection is specified by swapping the names.
+Across the x axis, LR and lr are swapped face names. In y axis, it's UD and ud. For z, it's fb and FB that are swapped.
+In the algebra, I may add it in like this:
 
+- {l/d}\[/d/f\] is reflected along x axis to: {/rd}\[df\]. Some people say to just reverse face direction, but also remember to swap those faces. That won't be too hard to support if it becomes necessary to put it into the language. Maybe chars x,y,z reserved for this.
+
+- x{l/d}\[/d/f\] = {/rd}\[df\]
+- x\[\[fr\]3 u\] = \[\[/f/l\]3 /u\]
 
 
 
