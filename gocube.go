@@ -834,6 +834,8 @@ func (cube *Cube) Execute(node Node, negates int) (string, error) {
 						}
 						outcome += result
 					}
+				}
+				if negates%2 == 0 {
 					for i := 0; i < len(fwd); i++ {
 						cmd := fwd[i]
 						if !node.Conjugated || i == 0 {
