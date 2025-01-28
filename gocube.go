@@ -827,29 +827,17 @@ func (cube *Cube) Execute(node Node, negates int) (string, error) {
 				}
 			}
 			if node.Commutator {
-				if node.Commutator && negates%2 == 0 {
-					for i := 0; i < len(fwd); i++ {
-						cmd := fwd[i]
-						if !node.Conjugated || i == 0 {
-							result, err := cube.Execute(cmd, negates+1)
-							if err != nil {
-								return outcome, fmt.Errorf("error in %s at %s: %s", outcome, result, err)
-							}
-							outcome += result
+				for i := 0; i < len(fwd); i++ {
+					cmd := fwd[i]
+					if !node.Conjugated || (i == 0 && negates%2 == 0) || (i != 0 && negates%2 == 1) {
+						result, err := cube.Execute(cmd, negates+1)
+						if err != nil {
+							return outcome, fmt.Errorf("error in %s at %s: %s", outcome, result, err)
 						}
+						outcome += result
 					}
 				}
-				if node.Commutator && negates%2 == 1 {
-					for i := 0; i < len(fwd); i++ {
-						cmd := fwd[i]
-						if !node.Conjugated || i != 0 {
-							result, err := cube.Execute(cmd, negates+1)
-							if err != nil {
-								return outcome, fmt.Errorf("error in %s at %s: %s", outcome, result, err)
-							}
-							outcome += result
-						}
-					}
+				if negates%2 == 1 {
 					for _, cmd := range fwd {
 						result, err := cube.Execute(cmd, negates)
 						if err != nil {
