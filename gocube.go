@@ -806,13 +806,12 @@ func (cube *Cube) Execute(node Node, negates int) (string, error) {
 	}
 	if node.Arr != nil {
 		fwd := make([]Node, 0)
-		rev := make([]Node, 0)
 		for i := 0; i < len(node.Arr); i++ {
-			fwd = append(fwd, node.Arr[i])
-			rev = append(rev, node.Arr[len(node.Arr)-1-i])
-		}
-		if negates%2 == 1 {
-			fwd, rev = rev, fwd
+			n := node.Arr[i]
+			if negates%2 == 1 {
+				n = node.Arr[len(node.Arr)-1-i]
+			}
+			fwd = append(fwd, n)
 		}
 		// interpret as repeats bind latest
 		for i := 0; i < repeat; i++ {
