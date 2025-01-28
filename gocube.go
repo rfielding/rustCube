@@ -805,18 +805,17 @@ func (cube *Cube) Execute(node Node, negates int) (string, error) {
 		negates++
 	}
 	if node.Arr != nil {
+		fwd := make([]Node, 0)
+		rev := make([]Node, 0)
+		for i := 0; i < len(node.Arr); i++ {
+			fwd = append(fwd, node.Arr[i])
+			rev = append(rev, node.Arr[len(node.Arr)-1-i])
+		}
+		if negates%2 == 1 {
+			fwd, rev = rev, fwd
+		}
 		// interpret as repeats bind latest
 		for i := 0; i < repeat; i++ {
-			// we swap these pointers around on each iteration, make sure it's all not-touched on iteration
-			fwd := make([]Node, 0)
-			rev := make([]Node, 0)
-			for i := 0; i < len(node.Arr); i++ {
-				fwd = append(fwd, node.Arr[i])
-				rev = append(rev, node.Arr[len(node.Arr)-1-i])
-			}
-			if negates%2 == 1 {
-				fwd, rev = rev, fwd
-			}
 			if !node.Commutator || (node.Commutator && negates%2 == 0) {
 				for _, cmd := range fwd {
 					result, err := cube.Execute(cmd, negates)
