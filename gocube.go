@@ -814,12 +814,10 @@ func (cube *Cube) Execute(node Node, negates int) (string, error) {
 				fwd = append(fwd, node.Arr[i])
 				rev = append(rev, node.Arr[len(node.Arr)-1-i])
 			}
+			if negates%2 == 1 {
+				fwd, rev = rev, fwd
+			}
 			if !node.Commutator {
-				// when reversed, we walkk parenthesis backwards
-				reversed := negates%2 == 1
-				if reversed {
-					fwd, rev = rev, fwd
-				}
 				for _, cmd := range fwd {
 					result, err := cube.Execute(cmd, negates)
 					if err != nil {
@@ -828,12 +826,6 @@ func (cube *Cube) Execute(node Node, negates int) (string, error) {
 					outcome += result
 				}
 			} else {
-				// using commutator notion of inverse comes second, because, see the notation mess if not?
-				// [fr] = (rf)/(fr) = r f /r /f
-				// [fr][rf] = r f /r /f f r /f /r
-				if negates%2 == 1 {
-					fwd, rev = rev, fwd
-				}
 				if negates%2 == 0 {
 					for _, cmd := range fwd {
 						result, err := cube.Execute(cmd, negates)
