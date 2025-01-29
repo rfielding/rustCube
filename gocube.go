@@ -788,16 +788,16 @@ func (cube *Cube) Pop() bool {
 	return true
 }
 
-func (cube *Cube) ExecuteCommand(node Node, negates int) (string, error) {
+func (cube *Cube) ExecuteCommand(node Node) (string, error) {
 	// append a copy of the stickers before this execution
 	cube.History = append(cube.History, make(map[string]string))
 	for k, v := range cube.Stickers {
 		cube.History[len(cube.History)-1][k] = v
 	}
-	return cube.Execute(node, negates)
+	return cube.Execute(node, 0, 0, 0, 0, 0)
 }
 
-func (cube *Cube) Execute(node Node, negates int) (string, error) {
+func (cube *Cube) Execute(node Node, negates, xflips, yflips, zflips, wflips int) (string, error) {
 	outcome := ""
 	repeat := 1
 	// globally track repeats we are under
