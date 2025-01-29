@@ -121,7 +121,7 @@ func (cube *Cube) PostTest() {
 
 	checkExecution := func(parsed Node, theCube *Cube) {
 		fmt.Printf("checkExecution: %s\n", parsed.Print())
-		execution, err := theCube.ExecuteCommand(parsed, 0)
+		execution, err := theCube.ExecuteCommand(parsed)
 		if err != nil {
 			cube.assert(fmt.Sprintf("execute error on example %s: %s\n", parsed.Print(), err))
 		}
@@ -144,7 +144,7 @@ func (cube *Cube) PostTest() {
 		if err != nil {
 			cube.assert(fmt.Sprintf("parse error on example invertability chech %s: %s\n", s, err))
 		}
-		ex1, err := c1.ExecuteCommand(node, 0)
+		ex1, err := c1.ExecuteCommand(node)
 		if err != nil {
 			cube.assert(fmt.Sprintf("execute error on example invertability chech %s: %s\n", s, err))
 		}
@@ -152,7 +152,7 @@ func (cube *Cube) PostTest() {
 		if err != nil {
 			cube.assert(fmt.Sprintf("parse error on example invertability chech %s: %s\n", sNot, err))
 		}
-		ex2, err := c1.Execute(node, 0)
+		ex2, err := c1.ExecuteCommand(node)
 		if err != nil {
 			cube.assert(fmt.Sprintf("execute error on example invertability chech %s: %s\n", sNot, err))
 		}
@@ -808,6 +808,18 @@ func (cube *Cube) Execute(node Node, negates, xflips, yflips, zflips, wflips int
 	if node.Negate {
 		negates++
 	}
+	if node.Reflection != "" {
+		switch node.Reflection {
+		case "x":
+			xflips++
+		case "y":
+			yflips++
+		case "z":
+			zflips++
+		case "w":
+			wflips++
+		}
+	}
 	if node.Arr != nil {
 		fwd := make([]Node, 0)
 		for i := 0; i < len(node.Arr); i++ {
@@ -821,7 +833,7 @@ func (cube *Cube) Execute(node Node, negates, xflips, yflips, zflips, wflips int
 		for i := 0; i < repeat; i++ {
 			if !node.Commutator || (node.Commutator && negates%2 == 0) {
 				for _, cmd := range fwd {
-					result, err := cube.Execute(cmd, negates)
+					result, err := cube.Execute(cmd, negates, xflips, yflips, zflips, wflips)
 					if err != nil {
 						return outcome, fmt.Errorf("error in %s at %s: %s", outcome, result, err)
 					}
@@ -832,7 +844,7 @@ func (cube *Cube) Execute(node Node, negates, xflips, yflips, zflips, wflips int
 				for i := 0; i < len(fwd); i++ {
 					cmd := fwd[i]
 					if !node.Conjugated || (i == 0 && negates%2 == 0) || (i != 0 && negates%2 == 1) {
-						result, err := cube.Execute(cmd, negates+1)
+						result, err := cube.Execute(cmd, negates+1, xflips, yflips, zflips, wflips)
 						if err != nil {
 							return outcome, fmt.Errorf("error in %s at %s: %s", outcome, result, err)
 						}
@@ -841,7 +853,7 @@ func (cube *Cube) Execute(node Node, negates, xflips, yflips, zflips, wflips int
 				}
 				if negates%2 == 1 {
 					for _, cmd := range fwd {
-						result, err := cube.Execute(cmd, negates)
+						result, err := cube.Execute(cmd, negates, xflips, yflips, zflips, wflips)
 						if err != nil {
 							return outcome, fmt.Errorf("error in %s at %s: %s", outcome, result, err)
 						}
@@ -959,7 +971,7 @@ func Loop() {
 		}
 
 		fmt.Printf("parsed as: %s\n", nodes.Print())
-		flattened, err := cube.ExecuteCommand(nodes, 0)
+		flattened, err := cube.ExecuteCommand(nodes)
 		if err != nil {
 			cube.Help()
 			msg := fmt.Sprintf("execute error. see help above: %s\n", err)
