@@ -808,19 +808,19 @@ func (cube *Cube) Execute(node Node, negates, xflips, yflips, zflips, wflips int
 	if node.Negate {
 		negates++
 	}
-	if node.Reflection != "" {
-		switch node.Reflection {
-		case "x":
-			xflips++
-		case "y":
-			yflips++
-		case "z":
-			zflips++
-		case "w":
-			wflips++
-		}
-	}
 	if node.Arr != nil {
+		if node.Reflection != "" {
+			switch node.Reflection {
+			case "x":
+				xflips++
+			case "y":
+				yflips++
+			case "z":
+				zflips++
+			case "w":
+				wflips++
+			}
+		}
 		fwd := make([]Node, 0)
 		for i := 0; i < len(node.Arr); i++ {
 			n := node.Arr[i]
@@ -863,6 +863,43 @@ func (cube *Cube) Execute(node Node, negates, xflips, yflips, zflips, wflips int
 			}
 		}
 	} else {
+		negates += xflips
+		negates += yflips
+		negates += zflips
+		negates += wflips
+		facemap := map[string]string{
+			"u": "u",
+			"r": "r",
+			"f": "f",
+			"d": "d",
+			"l": "l",
+			"b": "b",
+			"U": "U",
+			"R": "R",
+			"F": "F",
+			"D": "D",
+			"L": "L",
+			"B": "B",
+		}
+		if xflips%2 == 1 {
+			facemap["r"] = "l"
+			facemap["l"] = "r"
+			facemap["R"] = "L"
+			facemap["L"] = "R"
+		}
+		if yflips%2 == 1 {
+			facemap["u"] = "d"
+			facemap["d"] = "u"
+			facemap["U"] = "D"
+			facemap["D"] = "U"
+		}
+		if zflips%2 == 1 {
+			facemap["f"] = "b"
+			facemap["b"] = "f"
+			facemap["F"] = "B"
+			facemap["B"] = "F"
+		}
+		f := facemap[node.Face]
 		if node.Face != "" {
 			turn := repeat
 			turn = turn * (1 - 2*(negates%2))
@@ -871,11 +908,11 @@ func (cube *Cube) Execute(node Node, negates, xflips, yflips, zflips, wflips int
 				rstr = fmt.Sprintf("%d", repeat)
 			}
 			if negates%2 == 0 {
-				outcome += fmt.Sprintf("%s%s ", node.Face, rstr)
+				outcome += fmt.Sprintf("%s%s ", f, rstr)
 			} else {
-				outcome += fmt.Sprintf("/%s%s ", node.Face, rstr)
+				outcome += fmt.Sprintf("/%s%s ", f, rstr)
 			}
-			cube.Turn(node.Face, turn)
+			cube.Turn(f, turn)
 		}
 	}
 	return outcome, nil
