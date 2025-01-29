@@ -38,9 +38,7 @@ type Node struct {
 	Conjugated bool
 	Arr        []Node
 	Repeat     int
-	Xnegates   int
-	Ynegates   int
-	Znegates   int
+	Reflection string
 }
 
 var UseAnsi = true
@@ -603,6 +601,10 @@ func (node Node) Print() string {
 		} else {
 			v += "("
 		}
+		v += node.Reflection
+		if len(node.Reflection) > 0 {
+			v += " "
+		}
 		for i, n := range node.Arr {
 			if i > 0 {
 				v += " "
@@ -689,31 +691,32 @@ func (cube *Cube) Parse(input string) (Node, error) {
 	stack := [][]Node{{}}
 	nstack := make([]bool, 0)
 	wasNegated := false
+	rstack := make([]string, 0)
 
 	for i := 0; i < len(input); i++ {
 		char := input[i]
 
 		switch char {
-		case 'x', 'y', 'z':
-			/*
-				Reflection across x lets us map a move to any orientation and location.
-				{l\d}[/d\f] becomes {/rd}[df] when reflected across x, and it might also
-				be nested in moves like: {R {F (x{l\d}[/d\f]) }}.
-				This would dramatically reduce the number of named moves, but
-				won't really make sequences shorter. It would be useful for
-				equivalence checks.
-			*/
-			return Node{}, fmt.Errorf("reflections will reserve x,y,z for later use")
+		case 'x', 'y', 'z', 'w':
+			// modify stack top to not be ""
+			if len(rstack) == 0 {
+				return Node{}, fmt.Errorf("reflections must be inside a group with (, {, or [: %c", char)
+			}
+			rstack[len(rstack)-1] = string(char)
 		case '(', '[', '{':
 			stack = append(
 				stack,
 				[]Node{},
 			)
 			nstack = append(nstack, wasNegated)
+			rstack = append(rstack, "")
 		case ')', ']', '}':
 			if len(stack) > 1 {
 				negatedParens := nstack[len(nstack)-1]
 				nstack = nstack[:len(nstack)-1]
+
+				reflection := rstack[len(rstack)-1]
+				rstack = rstack[:len(rstack)-1]
 
 				last := stack[len(stack)-1]
 				stack = stack[:len(stack)-1]
@@ -726,6 +729,7 @@ func (cube *Cube) Parse(input string) (Node, error) {
 						Arr:        last,
 						Negate:     negatedParens,
 						Repeat:     1, // maybe updted
+						Reflection: reflection,
 					},
 				)
 			}
