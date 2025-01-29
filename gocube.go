@@ -702,6 +702,12 @@ func (cube *Cube) Parse(input string) (Node, error) {
 			if len(rstack) == 0 {
 				return Node{}, fmt.Errorf("reflections must be inside a group with (, {, or [: %c", char)
 			}
+			if len(stack) == 0 {
+				return Node{}, fmt.Errorf("reflection must be in parenthesis: %c", char)
+			}
+			if len(stack[len(stack)-1]) > 0 {
+				return Node{}, fmt.Errorf("reflection must first item in the group: %c", char)
+			}
 			rstack[len(rstack)-1] = string(char)
 		case '(', '[', '{':
 			stack = append(
