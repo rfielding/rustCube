@@ -71,7 +71,7 @@ var EqTest = [][]string{
 	{"{/r d} [d f]     -- edge after u solved ", "/r d r d f /d /f"},
 	{"{l /d} [/d /f]   -- edge after u is solved", "l /d /l /d /f d f"},
 	{"{f {ru}}         -- turn u inside [fr] center"},
-	//{"x{l/d}[/d/f]   -- mirror image a move accros axis R. negate all faces and swap f-b,l-r,u~d. to reuse moves.", "{/rd}[df]", "x{l/d}[/d/f]"},
+	{"(x {l /d} [/d /f] )   -- mirror image a move accros axis R. negate all faces and swap f-b,l-r,u~d. to reuse moves.", "{/rd}[df]"},
 }
 
 func stripComment(s string) string {
