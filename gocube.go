@@ -692,7 +692,7 @@ func (cube *Cube) Parse(input string) (Node, error) {
 	nstack := make([]bool, 0)
 	wasNegated := false
 	rstack := make([]string, 0)
-
+	reflectAll := ""
 	for i := 0; i < len(input); i++ {
 		char := input[i]
 
@@ -700,12 +700,13 @@ func (cube *Cube) Parse(input string) (Node, error) {
 		case 'x', 'y', 'z', 'w':
 			// modify stack top to not be ""
 			if len(rstack) == 0 {
-				return Node{}, fmt.Errorf("reflections must be inside a group with (, {, or [: %c", char)
+				reflectAll = string(char)
+			} else {
+				if len(stack[len(stack)-1]) > 0 {
+					return Node{}, fmt.Errorf("reflection must first item in the group: %c", char)
+				}
+				rstack[len(rstack)-1] = string(char)
 			}
-			if len(stack[len(stack)-1]) > 0 {
-				return Node{}, fmt.Errorf("reflection must first item in the group: %c", char)
-			}
-			rstack[len(rstack)-1] = string(char)
 		case '(', '[', '{':
 			stack = append(
 				stack,
@@ -773,7 +774,13 @@ func (cube *Cube) Parse(input string) (Node, error) {
 		// don't skip unless you set these
 		wasNegated = false
 	}
-	return Node{Arr: stack[0]}, nil
+	popped := stack[len(stack)-1]
+	stack = stack[:len(stack)-1]
+	n := Node{
+		Arr:        popped,
+		Reflection: reflectAll,
+	}
+	return n, nil
 }
 
 func (cube *Cube) Pop() bool {
