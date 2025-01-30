@@ -74,13 +74,13 @@ var EqTest = [][]string{
 	{"(x {l /d} [/d /f] )   -- mirror image a move accros axis R. negate all faces and swap f-b,l-r,u~d. to reuse moves.", "{/rd}[df]"},
 }
 
-func stripComment(s string) string {
+func strippedComment(s string) string {
 	return strings.Trim(strings.Split(s, "-")[0], " ")
 }
 
 func sameMeaning(s string) string {
 	// strip spaces after stripped comments
-	s = stripComment(s)
+	s = strippedComment(s)
 	// strip spaces
 	s = strings.Replace(s, " ", "", -1)
 	return s
@@ -173,7 +173,7 @@ func (cube *Cube) PostTest() {
 
 	for i := range EqTest {
 		// check the INTERPRETATION after a parse
-		s := stripComment(EqTest[i][0])
+		s := strippedComment(EqTest[i][0])
 		checkInvertability(s)
 
 		cube1 := NewCube()
@@ -183,7 +183,7 @@ func (cube *Cube) PostTest() {
 		// compare next string cubes to current cube state.
 		// stickers should be the same to pass the test.
 		for j := 1; j < len(EqTest[i]); j++ {
-			s2 := stripComment(EqTest[i][j])
+			s2 := strippedComment(EqTest[i][j])
 			checkInvertability(s2)
 
 			cube2 := NewCube()
@@ -634,7 +634,7 @@ func (node Node) Print() string {
 // parseParentheses parses the input string and constructs a nested Node structure.
 func (cube *Cube) Parse(input string) (Node, error) {
 	// string comments with --
-	input = stripComment(input)
+	input = sameMeaning(input)
 
 	// parenthesis balance
 	openParenCount := 0
