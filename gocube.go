@@ -716,6 +716,11 @@ func (cube *Cube) Parse(input string) (Node, error) {
 			rstack = append(rstack, "")
 		case ')', ']', '}':
 			if len(stack) > 1 {
+				if char == '}' || char == ']' {
+					if len(stack[len(stack)-1]) > 2 {
+						return Node{}, fmt.Errorf("use parenthesis to make %c use 2 items, to keep it from being ambiguous", char)
+					}
+				}
 				negatedParens := nstack[len(nstack)-1]
 				nstack = nstack[:len(nstack)-1]
 
