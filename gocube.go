@@ -766,8 +766,6 @@ func (cube *Cube) Parse(input string) (Node, error) {
 					stack[top][len(stack[top])-1].Repeat = num
 				}
 			}
-		case ' ':
-			// ignore
 		default:
 			// why do spaces make it stop? return nothing if it wont be interpreted right.
 			return Node{}, fmt.Errorf("unexpected character: %c", char)
