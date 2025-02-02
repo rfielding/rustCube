@@ -276,15 +276,15 @@ func NewCube() *Cube {
 	return cube
 }
 
-// stdio side-effect
-func (cube *Cube) Draw(cmd string, repeats int) {
-	fullMask := "%s  %s%s%s  %s%s%s  %s%s%s  %s\n"
-	edgeMask := "            %s%s%s            \n"
+// Draw with an allowance for 2 cubes side-by-side
+func Draw(cmd string, repeats int, cubes []*Cube) {
+	fullMask := "%s  %s%s%s  %s%s%s  %s%s%s  %s"
+	edgeMask := "            %s%s%s            "
 
-	s := func(s string) string {
-		v := cube.Stickers[s]
+	s := func(cube *Cube, x string) string {
+		v := cube.Stickers[x]
 		if v == "" {
-			panic(fmt.Sprintf("sticker is not mapped: %s\n%v", s, cube.Stickers))
+			panic(fmt.Sprintf("sticker is not mapped: %s\n%v", x, cube.Stickers))
 		}
 		// fg colors: 30 black, 31 red, 32 green, 33 yellow, 34 blue, 35 magenta, 36 cyan, 37 white
 		// bg colors: 40 black, 41 red, 42 green, 43 yellow, 44 blue, 45 magenta, 46 cyan, 47 white
@@ -321,63 +321,89 @@ func (cube *Cube) Draw(cmd string, repeats int) {
 		}
 		return v
 	}
-	fmt.Printf(edgeMask,
-		s("bld"), s("bd"), s("bdr"),
+
+	draw := func(mask string, args ...string) {
+		if mask == "" {
+			fmt.Println()
+			return
+		}
+		for c := 0; c < len(cubes); c++ {
+			a := make([]any, 0)
+			if mask == edgeMask {
+				for i := 0; i < 3; i++ {
+					a = append(a, s(cubes[c], args[i]))
+				}
+				fmt.Printf(edgeMask, a...)
+				fmt.Printf("      ")
+			}
+			if mask == fullMask {
+				for i := 0; i < 11; i++ {
+					a = append(a, s(cubes[c], args[i]))
+				}
+				fmt.Printf(fullMask, a...)
+				fmt.Printf("      ")
+			}
+		}
+		fmt.Println()
+	}
+
+	draw(edgeMask,
+		"bld", "bd", "bdr",
 	)
-	fmt.Printf(edgeMask,
-		s("bl"), s("b"), s("br"),
+	draw(edgeMask,
+		"bl", "b", "br",
 	)
-	fmt.Printf(edgeMask,
-		s("bul"), s("bu"), s("bru"),
+	draw(edgeMask,
+		"bul", "bu", "bru",
 	)
-	fmt.Println()
-	fmt.Printf(edgeMask,
-		s("ulb"), s("ub"), s("ubr"),
+	draw("")
+	draw(edgeMask,
+		"ulb", "ub", "ubr",
 	)
-	fmt.Printf(edgeMask,
-		s("ul"), s("u"), s("ur"),
+	draw(edgeMask,
+		"ul", "u", "ur",
 	)
-	fmt.Printf(edgeMask,
-		s("ufl"), s("uf"), s("urf"),
+	draw(edgeMask,
+		"ufl", "uf", "urf",
 	)
-	fmt.Println()
-	fmt.Printf(fullMask,
-		s("bul"),
-		s("lbu"), s("lu"), s("luf"),
-		s("flu"), s("fu"), s("fur"),
-		s("rfu"), s("ru"), s("rub"),
-		s("bru"),
+	draw("")
+	draw(fullMask,
+		"bul",
+		"lbu", "lu", "luf",
+		"flu", "fu", "fur",
+		"rfu", "ru", "rub",
+		"bru",
 	)
-	fmt.Printf(fullMask,
-		s("bl"),
-		s("lb"), s("l"), s("lf"),
-		s("fl"), s("f"), s("fr"),
-		s("rf"), s("r"), s("rb"),
-		s("br"),
+	draw(fullMask,
+		"bl",
+		"lb", "l", "lf",
+		"fl", "f", "fr",
+		"rf", "r", "rb",
+		"br",
 	)
-	fmt.Printf(fullMask,
-		s("bld"),
-		s("ldb"), s("ld"), s("lfd"),
-		s("fdl"), s("fd"), s("frd"),
-		s("rdf"), s("rd"), s("rbd"),
-		s("bdr"),
+	draw(fullMask,
+		"bld",
+		"ldb", "ld", "lfd",
+		"fdl", "fd", "frd",
+		"rdf", "rd", "rbd",
+		"bdr",
 	)
-	fmt.Println()
-	fmt.Printf(edgeMask,
-		s("dlf"), s("df"), s("dfr"),
+	draw("")
+	draw(edgeMask,
+		"dlf", "df", "dfr",
 	)
-	fmt.Printf(edgeMask,
-		s("dl"), s("d"), s("dr"),
+	draw(edgeMask,
+		"dl", "d", "dr",
 	)
-	fmt.Printf(edgeMask,
-		s("dbl"), s("db"), s("drb"),
+	draw(edgeMask,
+		"dbl", "db", "drb",
 	)
-	fmt.Println()
-	fmt.Printf(edgeMask,
-		s("bld"), s("bd"), s("bdr"),
+	draw("")
+	draw(edgeMask,
+		"bld", "bd", "bdr",
 	)
 
-	fmt.Println()
+	draw("")
 
 	fmt.Printf("cmd: %s x %d\n", cmd, repeats)
 
@@ -581,7 +607,8 @@ func (cube *Cube) Help() {
 	fmt.Println()
 	fmt.Printf("turn a face: %s\n", cube.facesString(false))
 	fmt.Printf("turn cube:   %s\n", cube.facesString(true))
-	fmt.Printf("pop move off history (undo):   x\n")
+	fmt.Printf("pop move off history (undo): p\n")
+	fmt.Printf("swap cubes: s\n")
 	fmt.Printf("startup test flag: -postTest\n")
 	cube.PrintRed("-----END HELP-----\n")
 }
@@ -942,6 +969,7 @@ func (cube *Cube) PrintRed(msg string) {
 
 func Loop() {
 	cube := NewCube()
+	cube2 := NewCube()
 
 	// loop to get and anlyze a line and draw the screen
 	cmd := ""
@@ -951,7 +979,7 @@ func Loop() {
 
 	rdr := bufio.NewReader(os.Stdin)
 	for {
-		cube.Draw(cmd, repeats)
+		Draw(cmd, repeats, []*Cube{cube, cube2})
 
 		fmt.Printf("\u25B6 ")
 		var err error
@@ -1008,6 +1036,12 @@ func Loop() {
 
 		if cmd == "n" {
 			cube = NewCube()
+			repeats = 0
+			continue
+		}
+
+		if cmd == "s" {
+			cube, cube2 = cube2, cube
 			repeats = 0
 			continue
 		}
