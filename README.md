@@ -1,6 +1,14 @@
 rustcube
 ========
 
+# The Rust implementation
+
+In src/main.rs, is the Rust version. It only supports raw moves
+
+# The Go implementation
+
+> go build -o gocube gocube.go && rlwrap ./gocube
+
 This includes a polished Go implementation, and a much simpler Rust implementation.
 
 ![ui.png](ui.png)
